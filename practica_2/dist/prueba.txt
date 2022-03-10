@@ -1,0 +1,35 @@
+a:="hola" ;
+b:= 3 + 2;
+c:= (5);
+d:= (holafuncion);
+e := a[1] + b;
+d[1] := 5;
+a := (3+2)*7;
+a["adei"]    := ("HOLA")+3;
+
+
+function test is
+begin
+    a := "";
+end
+
+function test is
+integer i,j,a;
+boolean a;
+begin
+end
+
+function test(ref integer a) is
+integer i,j,a;
+begin
+    i := 2+3;
+    b := "hola";
+end
+
+function test(ref integer a, val character b) is
+begin
+end
+
+procedure p is
+begin
+end
