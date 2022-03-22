@@ -33,3 +33,10 @@ end
 procedure p is
 begin
 end
+
+
+if (3 = 2) > 0 then
+         var := 3 + 2;
+	   else
+          var := 4 + 5;
+	   end

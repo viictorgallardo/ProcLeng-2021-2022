@@ -206,6 +206,7 @@ void instruccion () :
 	inst_asig() <tPCOMA>
 |	inst_declaracion_metodo()
 |	inst_declaracion_variable() <tPCOMA>
+| 	inst_seleccion() <tEND>
 }
 
 //DECLARACION VARIABLES
@@ -261,6 +262,21 @@ void inst_declaracion_proc():
 	<tPROCEDURE> <tID> (argumentos())? <tIS>
 }
 
+void inst_seleccion():
+{
+
+}
+{
+	<tIF> expr() <tTHEN> instruccion() masIf()
+}
+
+void masIf():
+{
+
+}
+{
+	(<tELSE> instruccion())?	 // cadena vacía
+}
 // Regla relativa a los argumentos que se le pasa a una función
 void argumentos() :
 {
@@ -333,7 +349,7 @@ void operador() :
 
 }
 {
-	<tSUMA> | <tRESTA> | <tMUL> | <tDIV> | <tOR> | <tAND>
+	<tSUMA> | <tRESTA> | <tMUL> | <tDIV> | <tOR> | <tAND> | <tIGUAL> | <tMAYOR> | <tMAYORI> | <tMENOR> | <tMENORI>
 }
 
 void factor() :
