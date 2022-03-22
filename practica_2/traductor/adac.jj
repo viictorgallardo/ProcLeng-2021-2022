@@ -8,7 +8,6 @@
 
 options {
    COMMON_TOKEN_ACTION = true;
-   //DEBUG_PARSER = true;
 }
 
 
@@ -156,7 +155,8 @@ TOKEN :  //-----caracteres , operadores y separadores
 |	< tSUMA: "+" > 
 |	< tRESTA: "-">
 |	< tMUL:	"*" >
-|	< tDIV: "/" >
+|	< tDIV: "div" >
+|	< tMOD: "mod">
 | 	< tCOMA: ",">
 |	< tPCOMA: ";" >
 |	< tMENOR: "<" >
@@ -206,6 +206,7 @@ void instruccion () :
 	inst_asig() <tPCOMA>
 |	inst_declaracion_metodo()
 |	inst_declaracion_variable() <tPCOMA>
+|	inst_while() <tPCOMA>
 }
 
 //DECLARACION VARIABLES
@@ -225,7 +226,7 @@ void inst_declaracion_metodo() :
 	
 }
 {
-	(inst_declaracion_proc() | inst_declaracion_func()) declaracion_variables() <tBEGIN> (instruccion_en_metodo())* <tEND>
+	(inst_declaracion_proc() | inst_declaracion_func())
 }
 
 void instruccion_en_metodo() :
@@ -234,6 +235,15 @@ void instruccion_en_metodo() :
 }
 {
 	inst_asig() <tPCOMA>
+|	inst_return() <tPCOMA>
+}
+
+void inst_return() :
+{
+
+}
+{
+	<tRETURN> expr()
 }
 
 void declaracion_variables() :
@@ -241,7 +251,7 @@ void declaracion_variables() :
 	
 }
 {
-	(inst_declaracion_variable() <tPCOMA>)*
+	((inst_declaracion_variable() <tPCOMA>) | inst_declaracion_metodo())*
 }
 
 //FUNCION
@@ -250,7 +260,7 @@ void inst_declaracion_func() :
 
 }
 {
-	<tFUNCTION> <tID> (argumentos())? <tIS>
+	<tFUNCTION> tipos() <tID> (argumentos())? <tIS> declaracion_variables() <tBEGIN> (instruccion_en_metodo())* <tEND>
 }
 //PROCEDIMIENTO
 void inst_declaracion_proc():
@@ -258,7 +268,7 @@ void inst_declaracion_proc():
 
 }
 {
-	<tPROCEDURE> <tID> (argumentos())? <tIS>
+	<tPROCEDURE> <tID> (argumentos())? <tIS> declaracion_variables() <tBEGIN> (instruccion_en_metodo())* <tEND>
 }
 
 // Regla relativa a los argumentos que se le pasa a una función
@@ -294,8 +304,8 @@ void tipos():
 }
 {
 	<tINT>
-| <tCHAR>
-| <	tBOOL>
+| 	<tCHAR>
+| 	<tBOOL>
 }
 
 //ASIGNACIONES
@@ -333,12 +343,12 @@ void operador() :
 
 }
 {
-	<tSUMA> | <tRESTA> | <tMUL> | <tDIV> | <tOR> | <tAND>
+	<tSUMA> | <tRESTA> | <tMUL> | <tDIV> | <tOR> | <tAND> | <tMOD>
 }
 
 void factor() :
 {
-//	System.out.println("hola");
+
 }
 {
 	<tNUM>		//3
@@ -347,6 +357,14 @@ void factor() :
 |	<tID>		//a
 |	<tPOPEN> expr() <tPCLOSE>		//(expr)
 |	<tNOT> factor()		//not expr
+}
+
+void inst_while() :
+{
+
+}
+{
+	<tWHILE> expr() <tDO> (instruccion_en_metodo())* <tEND>
 }
 
 
