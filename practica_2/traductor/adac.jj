@@ -238,9 +238,8 @@ void instruccion_en_metodo() :
 {
 	LOOKAHEAD(2)  inst_asig() <tPCOMA>
 |	inst_return() <tPCOMA>
-|	inst_while()
-| 	LOOKAHEAD(2)  inst_seleccion() <tEND>
-|	LOOKAHEAD(2)  inst_invocacion() <tPCOMA>
+|	inst_while() 
+| 	inst_seleccion() <tEND>
 }
 
 void inst_return() :
