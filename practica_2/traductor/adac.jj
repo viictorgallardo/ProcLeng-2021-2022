@@ -209,6 +209,7 @@ void instruccion () :
 |	inst_while()
 | 	inst_seleccion() <tEND>
 |	LOOKAHEAD(2)  inst_invocacion() <tPCOMA>
+|	inst_return() <tPCOMA>
 }
 
 //DECLARACION VARIABLES
@@ -231,16 +232,7 @@ void inst_declaracion_metodo() :
 	(inst_declaracion_proc() | inst_declaracion_func())
 }
 
-void instruccion_en_metodo() :
-{
 
-}
-{
-	LOOKAHEAD(2)  inst_asig() <tPCOMA>
-|	inst_return() <tPCOMA>
-|	inst_while() 
-| 	inst_seleccion() <tEND>
-}
 
 void inst_return() :
 {
@@ -264,7 +256,7 @@ void inst_declaracion_func() :
 
 }
 {
-	<tFUNCTION> tipos() <tID> (argumentos())? <tIS> declaracion_variables() <tBEGIN> (instruccion_en_metodo())* <tEND>
+	<tFUNCTION> tipos() <tID> (argumentos())? <tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
 }
 //PROCEDIMIENTO
 void inst_declaracion_proc():
@@ -272,7 +264,7 @@ void inst_declaracion_proc():
 
 }
 {
-	<tPROCEDURE> <tID> (argumentos())? <tIS> declaracion_variables() <tBEGIN> (instruccion_en_metodo())* <tEND>
+	<tPROCEDURE> <tID> (argumentos())? <tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
 }
 
 void inst_seleccion():
@@ -400,7 +392,7 @@ void inst_while() :
 
 }
 {
-	<tWHILE> expr() <tDO> (instruccion_en_metodo())* <tEND>
+	<tWHILE> expr() <tDO> (instruccion())* <tEND>
 }
 
 
