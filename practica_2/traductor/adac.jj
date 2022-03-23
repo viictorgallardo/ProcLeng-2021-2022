@@ -305,7 +305,7 @@ void list_params():
 
 }
 {
-	parametro() (<tCOMA> parametro())*
+	parametro() (<tPCOMA> parametro())*
 }
 
 void parametro():
@@ -313,8 +313,8 @@ void parametro():
 
 }
 {
-	<tREF> tipos() <tID>
-|	<tVAL> tipos() <tID>
+	<tREF> tipos() <tID> (<tCOMA> <tID>)*
+|	<tVAL> tipos() <tID> (<tCOMA> <tID>)*
 }
 
 
