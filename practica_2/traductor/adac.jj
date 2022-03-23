@@ -289,7 +289,7 @@ void argumentos() :
 
 }
 {
-	<tPOPEN> (list_params())+ <tPCLOSE>
+	<tPOPEN> (list_params())? <tPCLOSE>
 }
 
 void list_params():
