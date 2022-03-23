@@ -237,6 +237,8 @@ void instruccion_en_metodo() :
 {
 	inst_asig() <tPCOMA>
 |	inst_return() <tPCOMA>
+|	inst_while() <tPCOMA>
+| 	inst_seleccion() <tEND>
 }
 
 void inst_return() :
