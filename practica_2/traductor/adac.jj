@@ -359,7 +359,7 @@ void operador() :
 
 }
 {
-	<tSUMA> | <tRESTA> | <tMUL> | <tDIV> | <tOR> | <tAND> | <tIGUAL> | <tMAYOR> | <tMAYORI> | <tMENOR> | <tMENORI>
+	<tSUMA> | <tRESTA> | <tMUL> | <tDIV> | <tOR> | <tAND> | <tIGUAL> | <tMAYOR> | <tMAYORI> | <tMENOR> | <tMENORI> | <tDISTINTO> | <tMOD>
 }
 
 void factor() :
