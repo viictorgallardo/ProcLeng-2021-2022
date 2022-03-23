@@ -381,6 +381,7 @@ void factor() :
 {
 	<tNUM>		//3
 |	<tCAD>		//"hola", 'test', "", ''
+|	(<tTRUE> | <tFALSE>)	//booleano
 |	LOOKAHEAD(2)  <tID> <tCOPEN> expr() <tCCLOSE>	//a[expr]
 |	LOOKAHEAD(2)  inst_invocacion()
 |	LOOKAHEAD(2)  <tID>		//a
