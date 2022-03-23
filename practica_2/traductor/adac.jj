@@ -8,6 +8,7 @@
 
 options {
    COMMON_TOKEN_ACTION = true;
+//    DEBUG_PARSER = true;
 }
 
 
@@ -280,7 +281,7 @@ void masIf():
 
 }
 {
-	(<tELSE> instruccion())?	 // cadena vacía
+	(<tELSE> (instruccion())*)?	 // cadena vacía
 }
 // Regla relativa a los argumentos que se le pasa a una función
 void argumentos() :
