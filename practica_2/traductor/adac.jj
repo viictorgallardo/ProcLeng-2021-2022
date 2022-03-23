@@ -203,11 +203,12 @@ void instruccion () :
 
 }
 {
-	inst_asig() <tPCOMA>
+	LOOKAHEAD(2)  inst_asig() <tPCOMA>
 |	inst_declaracion_metodo()
 |	inst_declaracion_variable() <tPCOMA>
 |	inst_while()
 | 	inst_seleccion() <tEND>
+|	LOOKAHEAD(2)  inst_invocacion() <tPCOMA>
 }
 
 //DECLARACION VARIABLES
@@ -235,7 +236,7 @@ void instruccion_en_metodo() :
 
 }
 {
-	inst_asig() <tPCOMA>
+	LOOKAHEAD(2)  inst_asig() <tPCOMA>
 |	inst_return() <tPCOMA>
 |	inst_while() 
 | 	inst_seleccion() <tEND>
@@ -326,6 +327,22 @@ void tipos():
 | 	<tBOOL>
 }
 
+void inst_invocacion() :
+{
+
+}
+{
+	<tID> <tPOPEN> (list_expr())? <tPCLOSE>
+}
+
+void list_expr() :
+{
+
+}
+{
+	expr() (<tCOMA> expr())*
+}
+
 //ASIGNACIONES
 
 void inst_asig() :
@@ -372,7 +389,8 @@ void factor() :
 	<tNUM>		//3
 |	<tCAD>		//"hola", 'test', "", ''
 |	LOOKAHEAD(2)  <tID> <tCOPEN> expr() <tCCLOSE>	//a[expr]
-|	<tID>		//a
+|	LOOKAHEAD(2)  inst_invocacion()
+|	LOOKAHEAD(2)  <tID>		//a
 |	<tPOPEN> expr() <tPCLOSE>		//(expr)
 |	<tNOT> factor()		//not expr
 }
