@@ -273,7 +273,7 @@ void inst_seleccion():
 
 }
 {
-	<tIF> expr() <tTHEN> instruccion() masIf()
+	<tIF> expr() <tTHEN> (instruccion())* masIf()
 }
 
 void masIf():
