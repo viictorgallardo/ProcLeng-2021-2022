@@ -2,4 +2,6 @@ build/
 dist/
 jcc_files/
 
+.vscode/
+
 *.xml

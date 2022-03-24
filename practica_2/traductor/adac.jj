@@ -204,13 +204,23 @@ void instruccion () :
 
 }
 {
-	LOOKAHEAD(2)  inst_asig() <tPCOMA>
-|	inst_declaracion_metodo()
-|	inst_declaracion_variable() <tPCOMA>
-|	inst_while()
-| 	inst_seleccion() <tEND>
-|	LOOKAHEAD(2)  inst_invocacion() <tPCOMA>
-|	inst_return() <tPCOMA>
+	try {
+		LOOKAHEAD(2)  inst_asig() <tPCOMA>
+	|	inst_declaracion_metodo()
+	|	inst_declaracion_variable() <tPCOMA>
+	|	inst_while()
+	| 	inst_seleccion() 
+	|	LOOKAHEAD(2)  inst_invocacion() <tPCOMA>
+	|	inst_return() <tPCOMA>
+	}
+	catch(ParseException e) {
+		System.out.println(e.toString());
+		Token t;
+		do {
+		  t = getNextToken();
+		}
+		while (t.kind != tPCOMA);
+	}
 }
 
 //DECLARACION VARIABLES
@@ -273,7 +283,17 @@ void inst_seleccion():
 
 }
 {
-	<tIF> expr() <tTHEN> (instruccion())* masIf()
+	try {
+		<tIF> expr() <tTHEN> (instruccion())* masIf() <tEND>
+	}
+	catch(ParseException e) {
+		System.out.println(e.toString());
+		Token t;
+		do {
+		  t = getNextToken();
+		}
+		while (t.kind != tEND);
+	}
 }
 
 void masIf():
@@ -384,7 +404,7 @@ void factor() :
 |	(<tTRUE> | <tFALSE>)	//booleano
 |	LOOKAHEAD(2)  <tID> <tCOPEN> expr() <tCCLOSE>	//a[expr]
 |	LOOKAHEAD(2)  inst_invocacion()
-|	LOOKAHEAD(2)  <tID>		//a
+|	<tID>		//a
 |	<tPOPEN> expr() <tPCLOSE>		//(expr)
 |	<tNOT> factor()		//not expr
 }
@@ -394,7 +414,17 @@ void inst_while() :
 
 }
 {
-	<tWHILE> expr() <tDO> (instruccion())* <tEND>
+	try {
+		<tWHILE> expr() <tDO> (instruccion())* <tEND>
+	}
+	catch(ParseException e) {
+		System.out.println(e.toString());
+		Token t;
+		do {
+		  t = getNextToken();
+		}
+		while (t.kind != tEND);
+	}
 }
 
 
