@@ -220,7 +220,7 @@ void inst_declaracion_variable() :
 
 }
 {
-	tipos() <tID> (<tCOMA> <tID>)*
+	tipos() <tID> (<tCOPEN> expr() <tCCLOSE>)? (<tCOMA> <tID> (<tCOPEN> expr() <tCCLOSE>)?)*
 }
 
 //DECLARACION METODO
@@ -305,8 +305,8 @@ void parametro():
 
 }
 {
-	<tREF> tipos() <tID> (<tCOMA> <tID>)*
-|	<tVAL> tipos() <tID> (<tCOMA> <tID>)*
+	<tREF> tipos() <tID> (<tCOPEN> expr() <tCCLOSE>)? (<tCOMA> <tID> (<tCOPEN> expr() <tCCLOSE>)?)*
+|	<tVAL> tipos() <tID> (<tCOPEN> expr() <tCCLOSE>)? (<tCOMA> <tID> (<tCOPEN> expr() <tCCLOSE>)?)*
 }
 
 
