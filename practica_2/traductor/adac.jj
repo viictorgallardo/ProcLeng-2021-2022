@@ -90,6 +90,8 @@ TOKEN : //-------palabras reservadas e identificadores
 |	< tDO: "do" >
 |	< tEND: "end">
 |	< tTHEN: "then">
+|	<tPUT : "put" >
+|	< tPUTLINE: "put_line">
 }
 
 
@@ -206,6 +208,8 @@ void instruccion () :
 {
 	try {
 		LOOKAHEAD(2)  inst_asig() <tPCOMA>
+	|	inst_escribir() <tPCOMA> 
+	| 	inst_escribir_linea() <tPCOMA>
 	|	inst_declaracion_metodo()
 	|	inst_declaracion_variable() <tPCOMA>
 	|	inst_while()
@@ -276,6 +280,23 @@ void inst_declaracion_proc():
 }
 {
 	<tPROCEDURE> <tID> (argumentos())? <tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
+}
+
+
+void inst_escribir():
+{
+
+}
+{
+	<tPUT> <tPOPEN> list_expr() <tPCLOSE>	
+}
+
+void inst_escribir_linea():
+{
+
+}
+{
+	<tPUTLINE> <tPOPEN> list_expr() <tPCLOSE>
 }
 
 void inst_seleccion():
