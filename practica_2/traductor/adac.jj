@@ -336,7 +336,7 @@ void inst_escribir_linea():
 
 }
 {
-	<tPUTLINE> <tPOPEN> list_expr() <tPCLOSE>
+	<tPUTLINE> <tPOPEN> (list_expr())? <tPCLOSE>
 }
 
 void inst_seleccion():
