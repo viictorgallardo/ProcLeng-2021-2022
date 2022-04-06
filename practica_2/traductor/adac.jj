@@ -328,7 +328,7 @@ void inst_escribir():
 
 }
 {
-	<tPUT> <tPOPEN> list_expr() <tPCLOSE>	
+	<tPUT> <tPOPEN> (list_expr())? <tPCLOSE>	
 }
 
 void inst_escribir_linea():
