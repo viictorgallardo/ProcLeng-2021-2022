@@ -1,0 +1,48 @@
+--  Programa que imprime el tablero correspondiente a una notacion FEN de ajedrez dada. 
+--  Para probarlo ejecutarlo e introducir una notacion FEN correcta, por ejemplo:
+--  4t1r1/p1p2pp1/1d1p3p/1P3P2/1P6/2c1D3/PA4PP/4T1R1/
+
+procedure fenChess is
+---------------------------------------------------------------------------------------------
+character entrada;
+integer i;
+integer espacios;
+---------------------------------------------------------------------------------------------
+begin
+
+i := 0;
+while i < 64 do
+    get(entrada);
+    i := i+1;
+    if ((entrada > '0') and (entrada < '8')) then
+        espacios := char2int(entrada);
+        espacios := espacios - 48;
+        while espacios > 0 do
+            put('#');
+            espacios := espacios - 1;
+        end
+    else
+        if(entrada = '/') then
+            put_line ("");
+        end
+        if ((entrada = 'p') or (entrada = 'P')) then
+            put(entrada);
+        end
+        if((entrada = 'c') or (entrada = 'C')) then
+            put(entrada);
+        end
+        if((entrada = 'a') or (entrada = 'A')) then
+            put(entrada);
+        end
+        if((entrada = 't') or (entrada = 'T')) then
+            put(entrada);
+        end
+        if((entrada = 'd') or (entrada = 'D')) then
+            put(entrada);
+        end
+        if((entrada = 'r') or (entrada = 'R')) then
+            put(entrada);
+        end
+    end
+end
+end

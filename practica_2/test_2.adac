@@ -1,0 +1,328 @@
+--  Programa que decodifica los codigos qr con formato simplificado generados por test_1.adac
+
+procedure qrDecode is
+integer i, j, positions[208], temp;
+character t[26];
+boolean qr[441], buffer[8];
+
+------------------------------------------------------------
+procedure get_qr (ref boolean d[441]) is
+------------------------------------------------------------
+integer i;
+character temp;
+begin
+    --Iterar hasta '\n'
+    i := 0;
+	get (temp);
+    while (i<441) do
+        d[i] := (temp='#');
+        --skip \n
+        while (char2int(temp) = 10) do 
+        	get (temp);
+            d[i] := (temp='#');
+        end
+        get (temp);
+        i := i+1;
+    end
+end
+
+------------------------------------------------------------
+function integer index (val integer x,y) is
+------------------------------------------------------------
+begin
+    return x+y*21;
+end
+
+------------------------------------------------------------
+procedure bin2int (ref integer input; val boolean a,b,c,d,e,f,g,h) is
+------------------------------------------------------------
+integer k;
+begin
+    if (a) then
+        input := input + 1;
+    end
+    if (b) then
+        input := input + 2;
+    end
+    if (c) then
+        input := input + 4;
+    end
+    if (d) then
+        input := input + 8;
+    end
+    if (e) then
+        input := input + 16;
+    end
+    if (f) then
+        input := input + 32;
+    end
+    if (g) then
+        input := input + 64;
+    end
+    if (h) then
+        input := input + 128;
+    end
+end
+
+------------------------------------------------------------
+
+------------------------------------------------------------
+begin
+--Hand coded data positions
+positions[0] := index(20,20);
+positions[1] := index(19,20);
+positions[2] := index(20,19);
+positions[3] := index(19,19);
+positions[4] := index(20,18);
+positions[5] := index(19,18);
+positions[6] := index(20,17);
+positions[7] := index(19,17);
+
+positions[8] := index(20,16);
+positions[9] := index(19,16);
+positions[10] := index(20,15);
+positions[11] := index(19,15);
+positions[12] := index(20,14);
+positions[13] := index(19,14);
+positions[14] := index(20,13);
+positions[15] := index(19,13);
+
+positions[16] := index(20,12);
+positions[17] := index(19,12);
+positions[18] := index(20,11);
+positions[19] := index(19,11);
+positions[20] := index(20,10);
+positions[21] := index(19,10);
+positions[22] := index(20,9);
+positions[23] := index(19,9);
+
+
+positions[24] := index(18,9);
+positions[25] := index(17,9);
+positions[26] := index(18,10);
+positions[27] := index(17,10);
+positions[28] := index(18,11);
+positions[29] := index(17,11);
+positions[30] := index(18,12);
+positions[31] := index(17,12);
+
+positions[32] := index(18,13);
+positions[33] := index(17,13);
+positions[34] := index(18,14);
+positions[35] := index(17,14);
+positions[36] := index(18,15);
+positions[37] := index(17,15);
+positions[38] := index(18,16);
+positions[39] := index(17,16);
+
+positions[40] := index(18,17);
+positions[41] := index(17,17);
+positions[42] := index(18,18);
+positions[43] := index(17,18);
+positions[44] := index(18,19);
+positions[45] := index(17,19);
+positions[46] := index(18,20);
+positions[47] := index(17,20);
+
+
+positions[48] := index(16,20);
+positions[49] := index(15,20);
+positions[50] := index(16,19);
+positions[51] := index(15,19);
+positions[52] := index(16,18);
+positions[53] := index(15,18);
+positions[54] := index(16,17);
+positions[55] := index(15,17);
+
+positions[56] := index(16,16);
+positions[57] := index(15,16);
+positions[58] := index(16,15);
+positions[59] := index(15,15);
+positions[60] := index(16,14);
+positions[61] := index(15,14);
+positions[62] := index(16,13);
+positions[63] := index(15,13);
+
+positions[64] := index(16,12);
+positions[65] := index(15,12);
+positions[66] := index(16,11);
+positions[67] := index(15,11);
+positions[68] := index(16,10);
+positions[69] := index(15,10);
+positions[70] := index(16,9);
+positions[71] := index(15,9);
+
+
+positions[72] := index(14,9);
+positions[73] := index(13,9);
+positions[74] := index(14,10);
+positions[75] := index(13,10);
+positions[76] := index(14,11);
+positions[77] := index(13,11);
+positions[78] := index(14,12);
+positions[79] := index(13,12);
+
+positions[80] := index(14,13);
+positions[81] := index(13,13);
+positions[82] := index(14,14);
+positions[83] := index(13,14);
+positions[84] := index(14,15);
+positions[85] := index(13,15);
+positions[86] := index(14,16);
+positions[87] := index(13,16);
+
+positions[88] := index(14,17);
+positions[89] := index(13,17);
+positions[90] := index(14,18);
+positions[91] := index(13,18);
+positions[92] := index(14,19);
+positions[93] := index(13,19);
+positions[94] := index(14,20);
+positions[95] := index(13,20);
+
+
+positions[96] := index(12,20);
+positions[97] := index(11,20);
+positions[98] := index(12,19);
+positions[99] := index(11,19);
+positions[100] := index(12,18);
+positions[101] := index(11,18);
+positions[102] := index(12,17);
+positions[103] := index(11,17);
+
+positions[104] := index(12,16);
+positions[105] := index(11,16);
+positions[106] := index(12,15);
+positions[107] := index(11,15);
+positions[108] := index(12,14);
+positions[109] := index(11,14);
+positions[110] := index(12,13);
+positions[111] := index(11,13);
+
+positions[112] := index(12,12);
+positions[113] := index(11,12);
+positions[114] := index(12,11);
+positions[115] := index(11,11);
+positions[116] := index(12,10);
+positions[117] := index(11,10);
+positions[118] := index(12,9);
+positions[119] := index(11,9);
+
+positions[120] := index(12,8);
+positions[121] := index(11,8);
+positions[122] := index(12,7);
+positions[123] := index(11,7);
+positions[124] := index(12,5);
+positions[125] := index(11,5);
+positions[126] := index(12,4);
+positions[127] := index(11,4);
+
+positions[128] := index(12,3);
+positions[129] := index(11,3);
+positions[130] := index(12,2);
+positions[131] := index(11,2);
+positions[132] := index(12,1);
+positions[133] := index(11,1);
+positions[134] := index(12,0);
+positions[135] := index(11,0);
+
+
+
+positions[136] := index(10,0);
+positions[137] := index(9,0);
+positions[138] := index(10,1);
+positions[139] := index(9,1);
+positions[140] := index(10,2);
+positions[141] := index(9,2);
+positions[142] := index(10,3);
+positions[143] := index(9,3);
+
+positions[144] := index(10,4);
+positions[145] := index(9,4);
+positions[146] := index(10,5);
+positions[147] := index(9,5);
+positions[148] := index(10,7);
+positions[149] := index(9,7);
+positions[150] := index(10,8);
+positions[151] := index(9,8);
+
+positions[152] := index(10,9);
+positions[153] := index(9,9);
+positions[154] := index(10,10);
+positions[155] := index(9,10);
+positions[156] := index(10,11);
+positions[157] := index(9,11);
+positions[158] := index(10,12);
+positions[159] := index(9,12);
+
+positions[160] := index(10,13);
+positions[161] := index(9,13);
+positions[162] := index(10,14);
+positions[163] := index(9,14);
+positions[164] := index(10,15);
+positions[165] := index(9,15);
+positions[166] := index(10,16);
+positions[167] := index(9,16);
+
+positions[168] := index(10,17);
+positions[169] := index(9,17);
+positions[170] := index(10,18);
+positions[171] := index(9,18);
+positions[172] := index(10,19);
+positions[173] := index(9,19);
+positions[174] := index(10,20);
+positions[175] := index(9,20);
+
+
+positions[176] := index(8,9);
+positions[177] := index(7,9);
+positions[178] := index(8,10);
+positions[179] := index(7,10);
+positions[180] := index(8,11);
+positions[181] := index(7,11);
+positions[182] := index(8,12);
+positions[183] := index(7,12);
+
+
+positions[184] := index(5,12);
+positions[185] := index(4,12);
+positions[186] := index(5,11);
+positions[187] := index(4,11);
+positions[188] := index(5,10);
+positions[189] := index(4,10);
+positions[190] := index(5,9);
+positions[191] := index(4,9);
+
+
+positions[192] := index(3,9);
+positions[193] := index(2,9);
+positions[194] := index(3,10);
+positions[195] := index(2,10);
+positions[196] := index(3,11);
+positions[197] := index(2,11);
+positions[198] := index(3,12);
+positions[199] := index(2,12);
+
+
+positions[200] := index(1,12);
+positions[201] := index(0,12);
+positions[202] := index(1,11);
+positions[203] := index(0,11);
+positions[204] := index(1,10);
+positions[205] := index(0,10);
+positions[206] := index(1,9);
+positions[207] := index(0,9);
+
+get_qr(qr);
+
+i := 0;
+while (i<208) do
+    temp := 0;
+    bin2int(temp, qr[positions[i+0]], qr[positions[i+1]], qr[positions[i+2]], qr[positions[i+3]], qr[positions[i+4]], qr[positions[i+5]], qr[positions[i+6]], qr[positions[i+7]]);
+    t[i div 8] := int2char(temp);
+    i := i+8;
+end
+
+put_line("Decodificado: ",t);
+ 
+end

@@ -1,0 +1,81 @@
+
+--  Programa que, dado un numero, lo lee y escribe como se escucha. Ejemplo:
+--  Lee en voz alta '11'. Has dicho "dos unos", por lo que la transformacion es 21
+--  Para un numero grande: 33224555 => "dos treses dos doses un cuatro tres cincos" => 23221435
+
+procedure lookAndSay is
+integer i, input;
+
+------------------------------------------------------------
+procedure step (val integer input) is
+------------------------------------------------------------
+integer temp[255], j, k, t;
+begin
+    j := 0;
+    while (j<255) do
+        temp[j] := 0;
+        
+        j := j+1;
+    end
+
+    j := 0;
+    while(input > 0) do
+        temp[j] := input mod 10;
+        input := input div 10;
+
+        j := j+1;
+    end
+    --Rellenar el resto
+    while (j<255) do
+        temp[j] := 0;
+        
+        j := j+1;
+    end
+
+    j := 254;
+    while (j>=0) do
+        if (temp[j] <> 0) then
+            t := temp[j];
+            k := 1;
+            j := j-1;
+            if (j>=0) then
+                while ((temp[j] = t) and (j>=0)) do
+                    k := k+1;
+                    j := j-1;
+                end
+            end
+            put(k,t);
+        else
+            j := j-1;
+        end
+    end
+end
+
+------------------------------------------------------------
+procedure dato (ref integer d) is
+------------------------------------------------------------
+begin
+	d:=0;
+	while d <= 0 do
+		get (d);
+		if d <= 0 then
+			put_line("El numero debe ser > 0.");
+		end
+	end
+end
+
+------------------------------------------------------------
+
+------------------------------------------------------------
+begin
+
+input := 1;
+
+while (true) do
+    put_line("¿Que numero transformo?:");
+    dato(input);
+    step(input);
+    put_line ();
+end
+
+end
