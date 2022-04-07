@@ -16,6 +16,10 @@ package traductor;
 
 
 import lib.symbolTable.Symbol;
+public class atributos {
+	Symbol.Types tipo;
+	String id;
+}
 public class adac {
     public static void main(String[] args) {
     	adac parser;
