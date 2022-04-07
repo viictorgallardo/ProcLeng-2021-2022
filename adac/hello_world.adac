@@ -1,0 +1,5 @@
+procedure hello is
+integer A;
+begin
+    put_line ("Hello World!");
+end

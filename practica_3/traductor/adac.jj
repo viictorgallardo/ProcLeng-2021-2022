@@ -7,7 +7,6 @@
 //*****************************************************************
 
 options {
-   COMMON_TOKEN_ACTION = true;
 //    DEBUG_PARSER = true;
 }
 
@@ -16,7 +15,7 @@ PARSER_BEGIN(adac)
 package traductor;
 
 
-import java.lang.reflect.Field;
+import lib.symbolTable.Symbol;
 public class adac {
     public static void main(String[] args) {
     	adac parser;
@@ -52,23 +51,7 @@ SKIP :
 |	<"--" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
 }
 
-TOKEN_MGR_DECLS : {
-  	static void CommonTokenAction(Token token) {
-    	System.out.println("(" + token.beginLine + "," + token.beginColumn + "): " + getName(token) + " \"" + token.image + "\"");
-  	}
 
-	static String getName(Token token) {
-		int constant = 0;
-		for(Field f : adacConstants.class.getFields()){
-			try {
-				constant = f.getInt(null);
-			}
-			catch (Exception e) { return "ERROR"; }
-			if (token.kind == constant) { return f.getName(); }
-		}
-		return "ERROR";
-	}
-}
 
 TOKEN : //-------palabras reservadas e identificadores
 {
@@ -271,10 +254,13 @@ void inst_skip_line() :
 
 void inst_declaracion_variable() :
 {
-
+	Symbol.Types tipo = Symbol.Types.UNDEFINED;
 }
 {
-	tipos() <tID> (<tCOPEN> expr() <tCCLOSE>)? (<tCOMA> <tID> (<tCOPEN> expr() <tCCLOSE>)?)*
+	tipo = tipos() <tID> (<tCOPEN> expr() <tCCLOSE>)? (<tCOMA> <tID> (<tCOPEN> expr() <tCCLOSE>)?)* 
+	{
+		System.out.println(test);
+	}
 }
 
 //DECLARACION METODO
@@ -391,14 +377,23 @@ void parametro():
 }
 
 
-void tipos():
+Symbol.Types tipos():
 {
 
 }
 {
 	<tINT>
+	{
+		return Symbol.Types.INT;
+	}
 | 	<tCHAR>
+{
+	return Symbol.Types.CHAR;
+}
 | 	<tBOOL>
+{
+	return Symbol.Types.BOOL;
+}
 }
 
 void inst_invocacion() :
