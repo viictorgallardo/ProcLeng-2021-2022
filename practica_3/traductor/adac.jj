@@ -15,12 +15,24 @@ PARSER_BEGIN(adac)
 package traductor;
 
 
-import lib.symbolTable.Symbol;
+import lib.*;
 public class atributos {
 	Symbol.Types tipo;
 	String id;
 }
+public class Valor {
+	Symbol.Types tipo;
+	int dim;
+	boolean v_bool;
+	int v_int;
+	char v_char;
+	String v_string;
+	boolean isConst;
+	boolean isAsig;
+}
 public class adac {
+	symbolTable tabla = new symbolTable();
+	ErrorSemantico errorSem = new ErrorSemantico
     public static void main(String[] args) {
     	adac parser;
 
@@ -91,61 +103,8 @@ TOKEN :  //-----caracteres , operadores y separadores
  	< #LETTER: (["a"-"z","A"-"Z"]) >
 |	< #DIGIT: ["0"-"9"] >
 |	< tNUM: (<DIGIT>)+ >
-|	< tCAD: 
-"\""													//Comillas
-	(
-			(~["\"","\\","\n","\r"])					//	Cualquier caracter que no sea \, ", \n, \r
-       	
-		|												//	o
-
-			(											//	Algo escapado
-				"\\"
-				(
-					["n","t","b","r","f","\\","'","\""]
-				|
-					["0"-"7"] ( ["0"-"7"] )?
-				|
-					["0"-"3"] ["0"-"7"] ["0"-"7"]
-				)
-			)
-        |												//	o
-			(											//	secuencia unicode escapada
-				"\\u"
-				["0"-"9","A"-"F","a"-"f"]
-				["0"-"9","A"-"F","a"-"f"]
-				["0"-"9","A"-"F","a"-"f"]
-				["0"-"9","A"-"F","a"-"f"]
-			)
-    )*													//0 o mas veces
-"\""													//Comillas
-|
-"\'"													//Comilla simple
-	(
-			(~["\'","\\","\n","\r"])					//	Cualquier caracter que no sea \, ", \n, \r
-       	
-		|												//	o
-
-			(											//	Algo escapado
-				"\\"
-				(
-					["n","t","b","r","f","\\","'","\""]
-				|
-					["0"-"7"] ( ["0"-"7"] )?
-				|
-					["0"-"3"] ["0"-"7"] ["0"-"7"]
-				)
-			)
-        |												//	o
-			(											//	secuencia unicode escapada
-				"\\u"
-				["0"-"9","A"-"F","a"-"f"]
-				["0"-"9","A"-"F","a"-"f"]
-				["0"-"9","A"-"F","a"-"f"]
-				["0"-"9","A"-"F","a"-"f"]
-			)
-    )*													//0 o mas veces
-"\'"													// Comilla simple
->
+|	< tCAD: "\"" (~["\t","\n","\r"])* "\"" >
+|	< tCHAR: "\'" (~["\t","\n","\r"])? "\'" >
 |	< tSUMA: "+" > 
 |	< tRESTA: "-">
 |	< tMUL:	"*" >
@@ -440,15 +399,13 @@ void asignable() :
 
 }
 {
-	LOOKAHEAD(2)  <tID> <tCOPEN> expr() <tCCLOSE>	// a[1]
-|	LOOKAHEAD(2)  <tID>		// a
-
-
+	LOOKAHEAD(2)  <tID> <tCOPEN> expr() <tCCLOSE>
+|	LOOKAHEAD(2)  <tID>	
 }
 
-void expr() :
+Valor expr() :
 {
-
+	Valor output;
 }
 {
   	factor()  ( operador() factor() )*
@@ -462,15 +419,49 @@ void operador() :
 	<tSUMA> | <tRESTA> | <tMUL> | <tDIV> | <tOR> | <tAND> | <tIGUAL> | <tMAYOR> | <tMAYORI> | <tMENOR> | <tMENORI> | <tDISTINTO> | <tMOD>
 }
 
-void factor() :
+Valor factor() :
 {
-
+	Valor output, data;
+	Token t1;
 }
 {
-	<tNUM>		//3
-|	<tCAD>		//"hola", 'test', "", ''
-|	(<tTRUE> | <tFALSE>)	//booleano
-|	LOOKAHEAD(2)  <tID> <tCOPEN> expr() <tCCLOSE>	//a[expr]
+	t1 = <tNUM>
+	{
+		output.tipo = Symbol.Types.INT;
+		output.isConst = true;
+		output.v_int = Integer.parseInt(t1.image);
+	}
+|	t1 = <tCAD>
+	{
+		output.tipo = Symbol.Types.STRING;
+		output.isConst = true;
+		output.v_string = t1.image;
+	}
+	t1 = <tCHAR>
+	{
+		output.tipo = Symbol.Types.CHAR; 
+		output.isConst = true;
+		output.v_char = t1.image;
+	}
+|	t1 = (<tTRUE> | <tFALSE>)
+	{
+		output.tipo = Symbol.Types.BOOL;
+		output.isConst = true;
+		output.v_int = Boolean.parseBoolean(t1.image);
+	}
+|	LOOKAHEAD(2)  t1=<tID> <tCOPEN> data=expr() <tCCLOSE>
+	{
+		output.isAsig = true;
+		Symbol var = null;
+		try {
+			var = tabla.getSymbol(t1.image)
+			output.tipo = var.type;
+		}
+		catch {
+			errorSem.deteccion(new SymbolNotFoundException(),t1)
+		}
+		if (output.tipo != data.tipo) { //Lanzar excepcion expr no tiene el tipo correcto}
+	}
 | 	inst_char2int()
 |	inst_int2char()
 |	LOOKAHEAD(2)  inst_invocacion()
