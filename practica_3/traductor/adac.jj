@@ -16,9 +16,10 @@ package traductor;
 
 
 import lib.*;
-public class atributos {
+public class Atributos {
 	Symbol.Types tipo;
 	String id;
+	int dim;
 }
 public class Valor {
 	Symbol.Types tipo;
@@ -31,7 +32,7 @@ public class Valor {
 	boolean isAsig;
 }
 public class adac {
-	symbolTable tabla = new symbolTable();
+	static SymbolTable tabla = new symbolTable();
 	ErrorSemantico errorSem = new ErrorSemantico
     public static void main(String[] args) {
     	adac parser;
@@ -218,12 +219,37 @@ void inst_skip_line() :
 void inst_declaracion_variable() :
 {
 	Symbol.Types tipo = Symbol.Types.UNDEFINED;
+	Atributos variable_atr = new Atributos();
 }
 {
-	tipo = tipos() <tID> (<tCOPEN> expr() <tCCLOSE>)? (<tCOMA> <tID> (<tCOPEN> expr() <tCCLOSE>)?)* 
+	tipo = tipos() variable_atr = variable(tipo) (<tCOMA> variable(tipo))* 
 	{
 		System.out.println(test);
+		if ( tipo == 1 ){		//INT
+			SymbolInt s = new SymbolInt(variable_atr.id);
+			s.constant = false;
+			try{
+				tabla.insert(s);
+			}
+			catch(AlreadyDefinedSymbolException e){
+				System.err.println("Error: " + variable_atr.id + "ya esta declarado");
+			}
+		}
 	}
+}
+
+Atributos variable(SymbolType tipo) :
+{
+	Token nombre;
+	Token dim;
+	Atributos caracteristicas = new Atributos();
+	Valor expr_devuelta = new Valor();
+}
+{
+	nombre = <tID> (<tCOPEN> expr_devuelta = expr() <tCCLOSE>)?
+	caracteristicas.id = nombre.image;
+	caracteristicas.tipo = tipo;
+	caracteristicas.dim = expr_devuelta.dim;
 }
 
 //DECLARACION METODO
