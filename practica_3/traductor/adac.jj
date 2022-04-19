@@ -227,14 +227,20 @@ void inst_declaracion_variable() :
 		System.out.println(test);
 		if ( tipo == 1 ){		//INT
 			SymbolInt s = new SymbolInt(variable_atr.id);
-			s.constant = false;
-			try{
-				tabla.insert(s);
-			}
-			catch(AlreadyDefinedSymbolException e){
-				System.err.println("Error: " + variable_atr.id + "ya esta declarado");
-			}
+		}else if( tipo == 2){
+			SymbolBool s = new SymbolBool(variable_atr.id);
 		}
+		else if( tipo == 3){
+			SymbolChar s = new SymbolChar(variable_atr.id);
+		}
+		s.constant = false;
+		try{
+			tabla.insert(s);
+		}
+		catch(AlreadyDefinedSymbolException e){
+			System.err.println("Error: " + variable_atr.id + "ya esta declarado");
+		}
+		
 	}
 }
 
