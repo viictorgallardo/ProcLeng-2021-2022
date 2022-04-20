@@ -16,24 +16,15 @@ package traductor;
 
 
 import lib.*;
-public class Atributos {
-	Symbol.Types tipo;
-	String id;
-	int dim;
-}
-public class Valor {
-	Symbol.Types tipo;
-	int dim;
-	boolean v_bool;
-	int v_int;
-	char v_char;
-	String v_string;
-	boolean isConst;
-	boolean isAsig;
-}
+
 public class adac {
+	public class Atributos {
+		Symbol.Types tipo;
+		String id;
+		int dim;
+	}
 	static SymbolTable tabla = new symbolTable();
-	ErrorSemantico errorSem = new ErrorSemantico
+	static ErrorSemantico errorSem = new ErrorSemantico();
     public static void main(String[] args) {
     	adac parser;
 
@@ -105,7 +96,7 @@ TOKEN :  //-----caracteres , operadores y separadores
 |	< #DIGIT: ["0"-"9"] >
 |	< tNUM: (<DIGIT>)+ >
 |	< tCAD: "\"" (~["\t","\n","\r"])* "\"" >
-|	< tCHAR: "\'" (~["\t","\n","\r"])? "\'" >
+|	< tCH: "\'" (~["\t","\n","\r"])? "\'" >
 |	< tSUMA: "+" > 
 |	< tRESTA: "-">
 |	< tMUL:	"*" >
@@ -225,12 +216,17 @@ void inst_declaracion_variable() :
 	tipo = tipos() variable_atr = variable(tipo) (<tCOMA> variable(tipo))* 
 	{
 		System.out.println(test);
-		if ( tipo == 1 ){		//INT
+		//ES VECTOR
+		if(variable_atr.dim != null){
+			SymbolArray s = new SymbolArray(variable_atr.id,variable_atr.dim,tipo);
+		}
+		if (tipo == 1) {		//INT
 			SymbolInt s = new SymbolInt(variable_atr.id);
-		}else if( tipo == 2){
+		}
+		else if (tipo == 2) {
 			SymbolBool s = new SymbolBool(variable_atr.id);
 		}
-		else if( tipo == 3){
+		else if (tipo == 3) {
 			SymbolChar s = new SymbolChar(variable_atr.id);
 		}
 		s.constant = false;
@@ -249,13 +245,25 @@ Atributos variable(SymbolType tipo) :
 	Token nombre;
 	Token dim;
 	Atributos caracteristicas = new Atributos();
-	Valor expr_devuelta = new Valor();
+	Symbol expr_devuelta = null;
 }
 {
 	nombre = <tID> (<tCOPEN> expr_devuelta = expr() <tCCLOSE>)?
-	caracteristicas.id = nombre.image;
+	{
+	caracteristicas.id = nombre;
 	caracteristicas.tipo = tipo;
-	caracteristicas.dim = expr_devuelta.dim;
+
+	if(expr_devuelta != null){
+		// EN CASO DE VECTOR
+		if(expr_devuelta.type != Symbol.Types.INT){ // EXPRESION TIENE QUE TENER UN VALOR NUMERICO
+			errorSem.deteccion(new TypeErrorException(), data, Token.Types.INT);
+		}else{
+			caracteristicas.dim = expr_devuelta.dim;	
+		}
+	
+	}
+	return caracteristicas;
+	}
 }
 
 //DECLARACION METODO
@@ -379,16 +387,16 @@ Symbol.Types tipos():
 {
 	<tINT>
 	{
-		return Symbol.Types.INT;
+	return Symbol.Types.INT;
 	}
 | 	<tCHAR>
-{
+	{
 	return Symbol.Types.CHAR;
-}
+	}
 | 	<tBOOL>
-{
+	{
 	return Symbol.Types.BOOL;
-}
+	}
 }
 
 void inst_invocacion() :
@@ -435,9 +443,9 @@ void asignable() :
 |	LOOKAHEAD(2)  <tID>	
 }
 
-Valor expr() :
+Symbol expr() :
 {
-	Valor output;
+	Symbol output;
 }
 {
   	factor()  ( operador() factor() )*
@@ -451,48 +459,46 @@ void operador() :
 	<tSUMA> | <tRESTA> | <tMUL> | <tDIV> | <tOR> | <tAND> | <tIGUAL> | <tMAYOR> | <tMAYORI> | <tMENOR> | <tMENORI> | <tDISTINTO> | <tMOD>
 }
 
-Valor factor() :
+Symbol factor() :
 {
-	Valor output, data;
+	Symbol output, data;
 	Token t1;
 }
 {
 	t1 = <tNUM>
 	{
-		output.tipo = Symbol.Types.INT;
-		output.isConst = true;
-		output.v_int = Integer.parseInt(t1.image);
+	output = new SymbolInt(Integer.parseInt(t1.image));
+	return output;
 	}
 |	t1 = <tCAD>
 	{
-		output.tipo = Symbol.Types.STRING;
-		output.isConst = true;
-		output.v_string = t1.image;
+	output = new SymbolString("",t1.image,Symbol.ParameterClass.NONE);
+	return output;
 	}
-	t1 = <tCHAR>
+	t1 = <tCH>
 	{
-		output.tipo = Symbol.Types.CHAR; 
-		output.isConst = true;
-		output.v_char = t1.image;
+	output = new SymbolChar(t1.image);
+	return output;
 	}
-|	t1 = (<tTRUE> | <tFALSE>)
+|	(t1=<tTRUE> | t1=<tFALSE>)
 	{
-		output.tipo = Symbol.Types.BOOL;
-		output.isConst = true;
-		output.v_int = Boolean.parseBoolean(t1.image);
+	output = new SymbolBool(Boolean.parseBoolean(t1.image));
+	return output;
 	}
 |	LOOKAHEAD(2)  t1=<tID> <tCOPEN> data=expr() <tCCLOSE>
 	{
-		output.isAsig = true;
-		Symbol var = null;
-		try {
-			var = tabla.getSymbol(t1.image)
-			output.tipo = var.type;
-		}
-		catch {
-			errorSem.deteccion(new SymbolNotFoundException(),t1)
-		}
-		if (output.tipo != data.tipo) { //Lanzar excepcion expr no tiene el tipo correcto}
+	//Acceder al vector
+	try {
+		output = tabla.getSymbol(t1.image);
+	}
+	catch(SymbolNotFoundException e) {
+		errorSem.deteccion(e, t1);
+	}
+	//Comprobar que el index es un int
+	if (data.type != Symbol.Types.INT) {
+		errorSem.deteccion(new TypeErrorException(), data, Token.Types.INT);
+	}
+	//TODO: Acceder a la componente del vector (tirar error IndexOOB si no existe)
 	}
 | 	inst_char2int()
 |	inst_int2char()
@@ -500,6 +506,9 @@ Valor factor() :
 |	<tID>		//a
 |	<tPOPEN> expr() <tPCLOSE>		//(expr)
 |	<tNOT> factor()		//not expr
+	{
+	//TODO: Checkear que factor es un bool, actualizar su valor
+	}
 }
 
 void inst_while() :
@@ -519,17 +528,5 @@ void inst_while() :
 		while (t.kind != tEND);
 	}
 }
-
-
-
-
-
-
-
-
-/*	( 
-		< tNUM > | < tID > | < tSUMA > | < tRESTA > | < tMUL > |<tELSE> | < tDIV > | < tPCOMA > | < tMENOR > | < tMAYOR > | < tMENORI > | < tMAYORI > | < tIGUAL > | < tDISTINTO > | < tASIGNACION > | < tPOPEN > | < tPCLOSE > | < tBEGIN > | < tBOOL > | < tCHAR > | < tINT > | < tIF > | < tWHILE > | < tPROCEDURE > | < tFUNCTION > | < tIS > | < tRETURN >| <tCAD> | <tDO> | <tEND> | < tTHEN > | <tCOMA> | <tCOPEN> | <tCCLOSE> | <tFALSE> | <tTRUE> | <tREF> | <tVAL> | <tOR> | <tAND>
-	)+
-	*/
 	
 

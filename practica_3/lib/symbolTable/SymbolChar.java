@@ -13,17 +13,20 @@ public class SymbolChar extends Symbol implements Cloneable {
     public SymbolChar(String _name) {
     	super(_name, Types.CHAR, ParameterClass.NONE);
         value = '\0';
-         
     }
 
      public SymbolChar(String _name, ParameterClass _class) {
     	super(_name, Types.CHAR, _class);
         value = '\0';
-        
     }
 
     public SymbolChar(String _name, char _value, ParameterClass _class) {
     	super(_name, Types.CHAR, _class);
+        value = _value;
+    }
+    //Char "desnudo"
+    public SymbolChar(char _value) {
+    	super("", Types.CHAR, ParameterClass.NONE, true); //TODO: Autogenerar un nombre?
         value = _value;
     }
 

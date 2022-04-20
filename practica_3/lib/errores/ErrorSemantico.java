@@ -13,6 +13,8 @@ import traductor.Token;
 
 import lib.symbolTable.exceptions.*; 
 
+import java.util.Arrays;
+
 public class ErrorSemantico {
 	final static String sep = "*************************************************************************";
 
@@ -32,6 +34,22 @@ public class ErrorSemantico {
 		System.err.println(sep);
 		System.err.println("ERROR SEMÁNTICO (" + t.beginLine + "," + t.beginColumn + "): " +
 				"Símbolo: '" + t.image + "'. El símbolo no está definido");
+		System.err.println(sep);
+	}
+
+	public static void deteccion(IndexOOB e, Token t, SymbolInt index) {
+		contadorErrores++;
+		System.err.println(sep);
+		System.err.println("ERROR SEMÁNTICO (" + t.beginLine + "," + t.beginColumn + "): " +
+				"Símbolo: '" + t.image + "'. Se ha intentado acceder a la componente inexistente: " + index.value);
+		System.err.println(sep);
+	}
+
+	public static void deteccion(TypeErrorException e, Token t, Token.Types... expectedTypes) {
+		contadorErrores++;
+		System.err.println(sep);
+		System.err.println("ERROR SEMÁNTICO (" + t.beginLine + "," + t.beginColumn + "): " +
+				"Símbolo: '" + t.image + "'. El tipo es incorrecto. Tipo(s) esperado(s): " + (Arrays.toString(expectedTypes)));
 		System.err.println(sep);
 	}
 

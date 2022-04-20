@@ -24,6 +24,11 @@ public class SymbolInt extends Symbol implements Cloneable {
     	super(_name, Types.INT, _class); 
         value = _value;
     }
+    //Numero "desnudo"
+    public SymbolInt(int _value) {
+    	super("", Types.INT, ParameterClass.NONE, true); //TODO: Autogenerar un nombre?
+        value = _value;
+    }
 
     public String toString() {
         return "(" + name + "," + type + "," + value + "," + parClass + "," + nivel + ")";

@@ -38,6 +38,10 @@ abstract public class Symbol implements Cloneable {
     public Symbol (String _name, Types _type, ParameterClass _parClass) {
     	this (_name, -1, _type, _parClass, false); 
     }
+
+    public Symbol (String _name, Types _type, ParameterClass _parClass, boolean _constant) {
+    	this (_name, -1, _type, _parClass, _constant);
+    }
    
     public Symbol (String _name, long _dir, Types _type, ParameterClass _parClass, boolean _constant) {
     	name = _name;
