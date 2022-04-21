@@ -493,12 +493,13 @@ void inst_asig() :
 {
 	Symbol asig = null;
 	Symbol expr = null;
+	Token temp;
 }
 {
-	asig = asignable() <tASIGNACION> expr = expr()
+	asig = asignable() temp=<tASIGNACION> expr = expr()
 	{
 		if (asig.type != expr.type){ // SE COMPRUEBA QUE EL ASIGNABLE Y LA EXPRESION A ASIGNAR SEAN DEL MISMO TIPO
-			errorSem.deteccion(new TypeErrorException,asig.nombre);
+			errorSem.deteccion(new TypeErrorException(), temp, asig.type);
 		}
 	}
 }
@@ -514,7 +515,7 @@ Symbol asignable() :
 	{
 		try{ //TODO: QUE LA CONSTANTE CON LA QUE SE INDEXA EL VECTOR EXISTA
 			//buscamos el simbolo asignable en la tabla de simbolos
-			output = getSymbol(nombre.image);
+			output = tabla.getSymbol(nombre.image);
 		}catch(SymbolNotFoundException e){
 			errorSem.deteccion(e,nombre);
 		}
@@ -524,7 +525,7 @@ Symbol asignable() :
 	{
 		try{ 
 			//buscamos el simbolo asignable en la tabla de simbolos
-			output = getSymbol(nombre.image);
+			output = tabla.getSymbol(nombre.image);
 		}catch(SymbolNotFoundException e){
 			errorSem.deteccion(e,nombre);
 		}
