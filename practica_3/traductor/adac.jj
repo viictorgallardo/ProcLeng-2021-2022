@@ -505,19 +505,29 @@ void inst_asig() :
 }
 
 
+// Si el asignable existe devuelve el asignable correspondiente de la tabla de simbolos, 
+// si no devuelve null.
 Symbol asignable() :
 {
 	Token nombre = null;
 	Symbol output = null;
+	Symbol expr = null;
 }
 {
-	LOOKAHEAD(2)  nombre = <tID> <tCOPEN> expr() <tCCLOSE>
+	LOOKAHEAD(2)  nombre = <tID> <tCOPEN> expr = expr() <tCCLOSE>
 	{
 		try{ //TODO: QUE LA CONSTANTE CON LA QUE SE INDEXA EL VECTOR EXISTA
 			//buscamos el simbolo asignable en la tabla de simbolos
 			output = tabla.getSymbol(nombre.image);
+			if(expr.type != Symbol.Types.INT){ // se mira si no se indexa con entero
+				errorSem.deteccion(new TypeErrorException(), nombre, Symbol.Types.INT);
+			}else{
+				if(expr.value <= 0 || expr.value > output.maxInd){
+					errorSem.deteccion(new IndexOOB(),nombre);
+				}
+			}	
 		}catch(SymbolNotFoundException e){
-			errorSem.deteccion(e,nombre);
+			errorSem.deteccion(e,nombre);	
 		}
 		return output;
 	}
