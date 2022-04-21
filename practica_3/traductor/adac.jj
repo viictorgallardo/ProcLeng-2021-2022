@@ -210,32 +210,13 @@ void inst_skip_line() :
 void inst_declaracion_variable() :
 {
 	Symbol.Types tipo = Symbol.Types.UNDEFINED;
-	Atributos variable_atr = new Atributos();
+
 }
 {
-	tipo = tipos() variable_atr = variable(tipo) (<tCOMA> variable(tipo))* 
+	tipo = tipos() variable(tipo) (<tCOMA> variable(tipo))* 
 	{
-		System.out.println(test);
-		//ES VECTOR
-		if(variable_atr.dim != null){
-			SymbolArray s = new SymbolArray(variable_atr.id,variable_atr.dim,tipo);
-		}
-		if (tipo == 1) {		//INT
-			SymbolInt s = new SymbolInt(variable_atr.id);
-		}
-		else if (tipo == 2) {
-			SymbolBool s = new SymbolBool(variable_atr.id);
-		}
-		else if (tipo == 3) {
-			SymbolChar s = new SymbolChar(variable_atr.id);
-		}
-		s.constant = false;
-		try{
-			tabla.insert(s);
-		}
-		catch(AlreadyDefinedSymbolException e){
-			System.err.println("Error: " + variable_atr.id + "ya esta declarado");
-		}
+		
+	
 		
 	}
 }
@@ -244,14 +225,44 @@ Atributos variable(SymbolType tipo) :
 {
 	Token nombre;
 	Token dim;
-	Atributos caracteristicas = new Atributos();
-	Symbol expr_devuelta = null;
+	
+
 }
 {
-	nombre = <tID> (<tCOPEN> expr_devuelta = expr() <tCCLOSE>)?
+	nombre = <tID> (<tCOPEN> dim = <tNUM> <tCCLOSE>)?
 	{
-	caracteristicas.id = nombre;
-	caracteristicas.tipo = tipo;
+
+
+	if(dim != null){
+		SymbolArray s = new SymbolArray(nombre.image,dim.image,tipo);
+	}
+	if (tipo == Symbol.Types.INT) {		//INT
+		SymbolInt s = new SymbolInt(nombre.image);
+	}
+	else if (tipo == Symbol.Types.BOOL) {
+		SymbolBool s = new SymbolBool(nombre.image);
+	}
+	else if (tipo == Symbol.Types.CHAR) {
+		SymbolChar s = new SymbolChar(nombre.image);
+	}
+	s.constant = false;
+	try{
+		tabla.insert(s);
+	}
+	catch(AlreadyDefinedSymbolException e){
+		System.err.println("Error: " + nombre.image + "ya esta declarado");
+	}
+
+
+
+
+
+
+
+
+
+
+
 
 	if(expr_devuelta != null){
 		// EN CASO DE VECTOR
