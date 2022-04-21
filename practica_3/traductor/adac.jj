@@ -323,18 +323,39 @@ void declaracion_variables() :
 //FUNCION
 void inst_declaracion_func() :
 {
-
+	Token nombre = null;
+	Symbol.Types tipo = Symbol.Types.UNDEFINED;
 }
 {
-	<tFUNCTION> tipos() <tID> (argumentos())? <tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
+	<tFUNCTION> tipo = tipos() nombre = <tID> (argumentos())? <tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
+	{
+		try{
+			SymbolFunction s = new SymbolFunction(nombre.image,null,tipo);
+			s.constant = true ;
+			tabla.insertSymbol(s);	
+			tabla.insertBlock();
+		}catch(AlreadyDefinedSymbolException e){
+			ErrorSem.deteccion(e, nombre );
+		}
+	}
 }
 //PROCEDIMIENTO
 void inst_declaracion_proc():
 {
-
+	Token nombre = null ;
 }
 {
-	<tPROCEDURE> <tID> (argumentos())? <tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
+	<tPROCEDURE> nombre = <tID> (argumentos())? <tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
+	{
+		try{
+			SymbolProcedure s = new SymbolProcedure(nombre.image);
+			s.constant = true;
+			tabla.insertSymbol(s);	
+			tabla.insertBlock();
+		}catch(AlreadyDefinedSymbolException e){
+			ErrorSem.deteccion(e, nombre );
+		}
+	}
 }
 
 
