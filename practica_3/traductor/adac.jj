@@ -15,7 +15,17 @@ PARSER_BEGIN(adac)
 package traductor;
 
 
-import lib.*;
+import lib.errores.ErrorSemantico;
+import lib.symbolTable.Symbol;
+import lib.symbolTable.SymbolArray;
+import lib.symbolTable.SymbolBool;
+import lib.symbolTable.SymbolChar;
+import lib.symbolTable.SymbolInt;
+import lib.symbolTable.SymbolString;
+import lib.symbolTable.SymbolTable;
+import lib.symbolTable.exceptions.AlreadyDefinedSymbolException;
+import lib.symbolTable.exceptions.SymbolNotFoundException;
+import lib.symbolTable.exceptions.TypeErrorException;
 
 public class adac {
 	public class Atributos {
@@ -23,7 +33,7 @@ public class adac {
 		String id;
 		int dim;
 	}
-	static SymbolTable tabla = new symbolTable();
+	static SymbolTable tabla = new SymbolTable();
 	static ErrorSemantico errorSem = new ErrorSemantico();
     public static void main(String[] args) {
     	adac parser;
@@ -215,19 +225,19 @@ void inst_declaracion_variable() :
 {
 	tipo = tipos() variable_atr = variable(tipo) (<tCOMA> variable(tipo))* 
 	{
-		System.out.println(test);
+		Symbol s;
 		//ES VECTOR
 		if(variable_atr.dim != null){
-			SymbolArray s = new SymbolArray(variable_atr.id,variable_atr.dim,tipo);
+			s = new SymbolArray(variable_atr.id,variable_atr.dim,tipo);
 		}
-		if (tipo == 1) {		//INT
-			SymbolInt s = new SymbolInt(variable_atr.id);
+		if (tipo == Symbol.Types.INT) {		//INT
+			s = new SymbolInt(variable_atr.id);
 		}
-		else if (tipo == 2) {
-			SymbolBool s = new SymbolBool(variable_atr.id);
+		else if (tipo == Symbol.Types.BOOL) {
+			s = new SymbolBool(variable_atr.id);
 		}
-		else if (tipo == 3) {
-			SymbolChar s = new SymbolChar(variable_atr.id);
+		else if (tipo == Symbol.Types.CHAR) {
+			s = new SymbolChar(variable_atr.id);
 		}
 		s.constant = false;
 		try{
@@ -240,7 +250,7 @@ void inst_declaracion_variable() :
 	}
 }
 
-Atributos variable(SymbolType tipo) :
+Atributos variable(Symbol.Types tipo) :
 {
 	Token nombre;
 	Token dim;
@@ -256,7 +266,7 @@ Atributos variable(SymbolType tipo) :
 	if(expr_devuelta != null){
 		// EN CASO DE VECTOR
 		if(expr_devuelta.type != Symbol.Types.INT){ // EXPRESION TIENE QUE TENER UN VALOR NUMERICO
-			errorSem.deteccion(new TypeErrorException(), data, Token.Types.INT);
+			errorSem.deteccion(new TypeErrorException(), nombre, Symbol.Types.INT);
 		}else{
 			caracteristicas.dim = expr_devuelta.dim;	
 		}
@@ -496,7 +506,7 @@ Symbol factor() :
 	}
 	//Comprobar que el index es un int
 	if (data.type != Symbol.Types.INT) {
-		errorSem.deteccion(new TypeErrorException(), data, Token.Types.INT);
+		errorSem.deteccion(new TypeErrorException(), data, Symbol.Types.INT);
 	}
 	//TODO: Acceder a la componente del vector (tirar error IndexOOB si no existe)
 	}

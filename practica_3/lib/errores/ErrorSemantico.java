@@ -10,7 +10,8 @@
 package lib.errores;
 
 import traductor.Token;
-
+import lib.symbolTable.Symbol;
+import lib.symbolTable.SymbolInt;
 import lib.symbolTable.exceptions.*; 
 
 import java.util.Arrays;
@@ -45,7 +46,7 @@ public class ErrorSemantico {
 		System.err.println(sep);
 	}
 
-	public static void deteccion(TypeErrorException e, Token t, Token.Types... expectedTypes) {
+	public static void deteccion(TypeErrorException e, Token t, Symbol.Types... expectedTypes) {
 		contadorErrores++;
 		System.err.println(sep);
 		System.err.println("ERROR SEMÁNTICO (" + t.beginLine + "," + t.beginColumn + "): " +
