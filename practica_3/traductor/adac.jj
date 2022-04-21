@@ -185,20 +185,28 @@ void instruccion () :
 	}
 }
 
-void inst_int2char() :
+Symbol inst_int2char() :
 {
-
+	Symbol output;
 }
 {
-	<tINT2CHAR> <tPOPEN> expr() <tPCLOSE>
+	<tINT2CHAR> <tPOPEN> output=expr() <tPCLOSE>
+	{
+		//TODO: convertir output a char
+		return output;
+	}
 }
 
-void inst_char2int() :
+Symbol inst_char2int() :
 {
-
+	Symbol output;
 }
 {
-	<tCHAR2INT> <tPOPEN> expr() <tPCLOSE>
+	<tCHAR2INT> <tPOPEN> output=expr() <tPCLOSE>
+	{
+		//TODO: convertir output a int
+		return output;
+	}
 }
 
 void inst_get() :
@@ -501,22 +509,30 @@ void asignable() :
 
 Symbol expr() :
 {
-	Symbol output;
+	Symbol output,f;
+	Token op;
 }
 {
-  	output = factor()  ( operador() factor() )*
+  	output=factor()  ( op=operador() f=factor()
+	{
+		//TODO: Hacer la operacion "op" entre "output" y "f", guardar resultado en "output"
+	}
+	)*
+
 	{
 		return output;
-		//TODO: Hacer operadores con los dos factores
 	}	
 }
 
-void operador() :
+Token operador() :
 {
-
+	Token output;
 }
 {
-	<tSUMA> | <tRESTA> | <tMUL> | <tDIV> | <tOR> | <tAND> | <tIGUAL> | <tMAYOR> | <tMAYORI> | <tMENOR> | <tMENORI> | <tDISTINTO> | <tMOD>
+	output=<tSUMA> | output=<tRESTA> | output=<tMUL> | output=<tDIV> | output=<tOR> | output=<tAND> | output=<tIGUAL> | output=<tMAYOR> | output=<tMAYORI> | output=<tMENOR> | output=<tMENORI> | output=<tDISTINTO> | output=<tMOD>
+	{
+		return output;
+	}
 }
 
 Symbol factor() :
@@ -527,49 +543,62 @@ Symbol factor() :
 {
 	t1 = <tNUM>
 	{
-	output = new SymbolInt(Integer.parseInt(t1.image));
-	return output;
+		output = new SymbolInt(Integer.parseInt(t1.image));
+		return output;
 	}
 |	t1 = <tCAD>
 	{
-	output = new SymbolString("",t1.image,Symbol.ParameterClass.NONE);
-	return output;
+		output = new SymbolString("",t1.image,Symbol.ParameterClass.NONE);
+		return output;
 	}
 	t1 = <tCH>
 	{
-	output = new SymbolChar(t1.image);
-	return output;
+		output = new SymbolChar(t1.image);
+		return output;
 	}
 |	(t1=<tTRUE> | t1=<tFALSE>)
 	{
-	output = new SymbolBool(Boolean.parseBoolean(t1.image));
-	return output;
+		output = new SymbolBool(Boolean.parseBoolean(t1.image));
+		return output;
 	}
 |	LOOKAHEAD(2)  t1=<tID> <tCOPEN> data=expr() <tCCLOSE>
 	{
-	//Acceder al vector
-	try {
-		output = tabla.getSymbol(t1.image);
-		//Comprobar que el index es un int
-		if (data.type != Symbol.Types.INT) {
-			errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.INT);
+		//Acceder al vector
+		try {
+			output = tabla.getSymbol(t1.image);
+			//Comprobar que el index es un int
+			if (data.type != Symbol.Types.INT) {
+				errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.INT);
+			}
+			//TODO: Acceder a la componente del vector (tirar error IndexOOB si no existe)
+			return output; //Temporal
 		}
-		//TODO: Acceder a la componente del vector (tirar error IndexOOB si no existe)
-		return output; //Temporal
-	}
-	catch(SymbolNotFoundException e) {
-		errorSem.deteccion(e, t1);
-	}
+		catch(SymbolNotFoundException e) {
+			errorSem.deteccion(e, t1);
+		}
 	
 	}
-| 	inst_char2int()
-|	inst_int2char()
+| 	output=inst_char2int()
+	{
+		return output;
+	}
+|	output=inst_int2char()
+	{
+		return output;
+	}
 |	LOOKAHEAD(2)  inst_invocacion()
-|	<tID>		//a
-|	<tPOPEN> expr() <tPCLOSE>		//(expr)
-|	<tNOT> factor()		//not expr
+|	<tID>
+	{
+		//TODO: Pillar de la tabla de simbolos, devolver ese
+	}
+|	<tPOPEN> output=expr() <tPCLOSE>
+	{
+		return output;
+	}
+|	<tNOT> output=factor()
 	{
 	//TODO: Checkear que factor es un bool, actualizar su valor
+		return output;
 	}
 }
 
