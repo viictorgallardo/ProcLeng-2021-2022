@@ -541,7 +541,115 @@ Symbol expr() :
 {
   	output=factor()  ( op=operador() f=factor()
 	{
-		//TODO: Hacer la operacion "op" entre "output" y "f", guardar resultado en "output"
+		switch (op) {
+			case tSUMA:
+				//Los dos tienen que ser enteros
+				if (output.type!=Symbol.Types.INT || f.type!=Symbol.Types.INT) {
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+				}
+				//Calculo
+				output = new SymbolInt(((SymbolInt)output).value + ((SymbolInt)f).value);
+				return output;
+			case tRESTA:
+				//Los dos tienen que ser enteros
+				if (output.type!=Symbol.Types.INT || f.type!=Symbol.Types.INT) {
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+				}
+				//Calculo
+				output = new SymbolInt(((SymbolInt)output).value - ((SymbolInt)f).value);
+				return output;
+			case tMUL:
+				//Los dos tienen que ser enteros
+				if (output.type!=Symbol.Types.INT || f.type!=Symbol.Types.INT) {
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+				}
+				//Calculo
+				output = new SymbolInt(((SymbolInt)output).value * ((SymbolInt)f).value);
+				return output;
+			case tDIV:
+				//Los dos tienen que ser enteros
+				if (output.type!=Symbol.Types.INT || f.type!=Symbol.Types.INT) {
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+				}
+				//Calculo
+				output = new SymbolInt(((SymbolInt)output).value / ((SymbolInt)f).value);
+				return output;
+			case tOR:
+				//Los dos tienen que ser booleanos
+				if (output.type!=Symbol.Types.BOOL || f.type!=Symbol.Types.BOOL) {
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+				}
+				//Calculo
+				output = new SymbolBool(((SymbolBool)output).value || ((SymbolBool)f).value);
+				return output;
+			case tAND:
+				//Los dos tienen que ser booleanos
+				if (output.type!=Symbol.Types.BOOL || f.type!=Symbol.Types.BOOL) {
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+				}
+				//Calculo
+				output = new SymbolBool((((SymbolBool)output).value && ((SymbolBool)f).value));
+				return output;
+			case tIGUAL:
+				//Los dos tienen que ser booleanos
+				if (output.type!=Symbol.Types.BOOL || f.type!=Symbol.Types.BOOL) {
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+				}
+				//Calculo
+				output = new SymbolBool((((SymbolBool)output).value == ((SymbolBool)f).value));
+				return output;
+			case tMAYOR:
+				//Los dos tienen que ser booleanos
+				if (output.type!=Symbol.Types.BOOL || f.type!=Symbol.Types.BOOL) {
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+				}
+				//Calculo
+				output = new SymbolBool((((SymbolBool)output).value > ((SymbolBool)f).value));
+				return output;
+			case tMAYORI:
+				//Los dos tienen que ser booleanos
+				if (output.type!=Symbol.Types.BOOL || f.type!=Symbol.Types.BOOL) {
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+				}
+				//Calculo
+				output = new SymbolBool((((SymbolBool)output).value >= ((SymbolBool)f).value));
+				return output;
+			case tMENOR:
+				//Los dos tienen que ser booleanos
+				if (output.type!=Symbol.Types.BOOL || f.type!=Symbol.Types.BOOL) {
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+				}
+				//Calculo
+				output = new SymbolBool((((SymbolBool)output).value < ((SymbolBool)f).value));
+				return output;
+			case tMENORI:
+				//Los dos tienen que ser booleanos
+				if (output.type!=Symbol.Types.BOOL || f.type!=Symbol.Types.BOOL) {
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+				}
+				//Calculo
+				output = new SymbolBool((((SymbolBool)output).value <= ((SymbolBool)f).value));
+				return output;
+			case tDISTINTO:
+				//Los dos tienen que ser booleanos
+				if (output.type!=Symbol.Types.BOOL || f.type!=Symbol.Types.BOOL) {
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+				}
+				//Calculo
+				output = new SymbolBool((((SymbolBool)output).value != ((SymbolBool)f).value));
+				return output;
+			case tMOD:
+				//Los dos tienen que ser enteros
+				if (output.type!=Symbol.Types.INT || f.type!=Symbol.Types.INT) {
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+				}
+				//Calculo
+				output = new SymbolInt(((SymbolInt)output).value % ((SymbolInt)f).value);
+				return output;
+			default:
+				//NOTE: Nunca deberia llegar aqui
+				return output;
+		}
 	}
 	)*
 
