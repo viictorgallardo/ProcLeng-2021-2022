@@ -18,6 +18,8 @@ package traductor;
 import lib.errores.ErrorSemantico;
 import lib.symbolTable.Symbol;
 import lib.symbolTable.SymbolArray;
+import lib.symbolTable.SymbolFunction;
+import lib.symbolTable.SymbolProcedure;
 import lib.symbolTable.SymbolBool;
 import lib.symbolTable.SymbolChar;
 import lib.symbolTable.SymbolInt;
@@ -330,12 +332,12 @@ void inst_declaracion_func() :
 	<tFUNCTION> tipo = tipos() nombre = <tID> (argumentos())? <tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
 	{
 		try{
-			SymbolFunction s = new SymbolFunction(nombre.image,null,tipo);
+			SymbolFunction s = new SymbolFunction(nombre.image,null,tipo); //TODO: numero de params
 			s.constant = true ;
 			tabla.insertSymbol(s);	
 			tabla.insertBlock();
 		}catch(AlreadyDefinedSymbolException e){
-			ErrorSem.deteccion(e, nombre );
+			errorSem.deteccion(e, nombre );
 		}
 	}
 }
@@ -348,12 +350,12 @@ void inst_declaracion_proc():
 	<tPROCEDURE> nombre = <tID> (argumentos())? <tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
 	{
 		try{
-			SymbolProcedure s = new SymbolProcedure(nombre.image);
+			SymbolProcedure s = new SymbolProcedure(nombre.image, null); //TODO numero de parametros
 			s.constant = true;
 			tabla.insertSymbol(s);	
 			tabla.insertBlock();
 		}catch(AlreadyDefinedSymbolException e){
-			ErrorSem.deteccion(e, nombre );
+			errorSem.deteccion(e, nombre );
 		}
 	}
 }
