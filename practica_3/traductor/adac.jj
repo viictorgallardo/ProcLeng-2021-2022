@@ -15,7 +15,17 @@ PARSER_BEGIN(adac)
 package traductor;
 
 
-import lib.*;
+import lib.errores.ErrorSemantico;
+import lib.symbolTable.Symbol;
+import lib.symbolTable.SymbolArray;
+import lib.symbolTable.SymbolBool;
+import lib.symbolTable.SymbolChar;
+import lib.symbolTable.SymbolInt;
+import lib.symbolTable.SymbolString;
+import lib.symbolTable.SymbolTable;
+import lib.symbolTable.exceptions.AlreadyDefinedSymbolException;
+import lib.symbolTable.exceptions.SymbolNotFoundException;
+import lib.symbolTable.exceptions.TypeErrorException;
 
 public class adac {
 	public class Atributos {
@@ -23,7 +33,7 @@ public class adac {
 		String id;
 		int dim;
 	}
-	static SymbolTable tabla = new symbolTable();
+	static SymbolTable tabla = new SymbolTable();
 	static ErrorSemantico errorSem = new ErrorSemantico();
     public static void main(String[] args) {
     	adac parser;
@@ -221,7 +231,7 @@ void inst_declaracion_variable() :
 	}
 }
 
-Atributos variable(SymbolType tipo) :
+Atributos variable(Symbol.Types tipo) :
 {
 	Token nombre;
 	Token dim;
@@ -267,7 +277,7 @@ Atributos variable(SymbolType tipo) :
 	if(expr_devuelta != null){
 		// EN CASO DE VECTOR
 		if(expr_devuelta.type != Symbol.Types.INT){ // EXPRESION TIENE QUE TENER UN VALOR NUMERICO
-			errorSem.deteccion(new TypeErrorException(), data, Token.Types.INT);
+			errorSem.deteccion(new TypeErrorException(), nombre, Symbol.Types.INT);
 		}else{
 			caracteristicas.dim = expr_devuelta.dim;	
 		}
@@ -528,7 +538,7 @@ Symbol factor() :
 	}
 	//Comprobar que el index es un int
 	if (data.type != Symbol.Types.INT) {
-		errorSem.deteccion(new TypeErrorException(), data, Token.Types.INT);
+		errorSem.deteccion(new TypeErrorException(), data, Symbol.Types.INT);
 	}
 	//TODO: Acceder a la componente del vector (tirar error IndexOOB si no existe)
 	}
