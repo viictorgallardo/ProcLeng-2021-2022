@@ -38,7 +38,7 @@ public class ErrorSemantico {
 		System.err.println(sep);
 	}
 
-	public static void deteccion(IndexOOB e, Token t, SymbolInt index) {
+	public static void deteccion(IndexOOBException e, Token t, SymbolInt index) {
 		contadorErrores++;
 		System.err.println(sep);
 		System.err.println("ERROR SEMÁNTICO (" + t.beginLine + "," + t.beginColumn + "): " +
