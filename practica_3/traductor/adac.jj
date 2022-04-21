@@ -25,6 +25,7 @@ import lib.symbolTable.SymbolChar;
 import lib.symbolTable.SymbolInt;
 import lib.symbolTable.SymbolString;
 import lib.symbolTable.SymbolTable;
+import lib.symbolTable.exceptions.IndexOOBException;
 import lib.symbolTable.exceptions.AlreadyDefinedSymbolException;
 import lib.symbolTable.exceptions.SymbolNotFoundException;
 import lib.symbolTable.exceptions.TypeErrorException;
@@ -524,7 +525,7 @@ Symbol asignable() :
 			}else{
 			
 				if(((SymbolInt)expr).value <= 0 || ((SymbolInt)expr).value > ((SymbolArray)output).maxInd){
-					errorSem.deteccion(new IndexOOB(),nombre,((SymbolInt)expr).value);
+					errorSem.deteccion(new IndexOOBException(),nombre,((SymbolInt)expr));
 				}
 			}	
 		}catch(SymbolNotFoundException e){
