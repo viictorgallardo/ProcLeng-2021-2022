@@ -491,20 +491,45 @@ void list_expr() :
 
 void inst_asig() :
 {
-
+	Symbol asig = null;
+	Symbol expr = null;
 }
 {
-	asignable() <tASIGNACION> expr()
+	asig = asignable() <tASIGNACION> expr = expr()
+	{
+		if (asig.type != expr.type){ // SE COMPRUEBA QUE EL ASIGNABLE Y LA EXPRESION A ASIGNAR SEAN DEL MISMO TIPO
+			errorSem.deteccion(new TypeErrorException,asig.nombre);
+		}
+	}
 }
 
 
-void asignable() :
+Symbol asignable() :
 {
-
+	Token nombre = null;
+	Symbol output = null;
 }
 {
-	LOOKAHEAD(2)  <tID> <tCOPEN> expr() <tCCLOSE>
-|	LOOKAHEAD(2)  <tID>	
+	LOOKAHEAD(2)  nombre = <tID> <tCOPEN> expr() <tCCLOSE>
+	{
+		try{ //TODO: QUE LA CONSTANTE CON LA QUE SE INDEXA EL VECTOR EXISTA
+			//buscamos el simbolo asignable en la tabla de simbolos
+			output = getSymbol(nombre.image);
+		}catch(SymbolNotFoundException e){
+			errorSem.deteccion(e,nombre);
+		}
+		return output;
+	}
+|	LOOKAHEAD(2)  nombre = <tID>
+	{
+		try{ 
+			//buscamos el simbolo asignable en la tabla de simbolos
+			output = getSymbol(nombre.image);
+		}catch(SymbolNotFoundException e){
+			errorSem.deteccion(e,nombre);
+		}
+		return output;
+	}	
 }
 
 Symbol expr() :
