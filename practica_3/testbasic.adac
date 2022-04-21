@@ -1,6 +1,13 @@
 procedure main is
 integer i,j;
 character a;
+
+function integer test (val integer A) is
+boolean x;
+begin
+
+end
+
 begin
     i := 10;
 end

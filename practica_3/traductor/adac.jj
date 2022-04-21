@@ -157,24 +157,23 @@ void S () :
 
 void instruccion () :
 {
-	System.out.println(tabla.toString()+"\n\n\n");
-
+	
 }
 {
 	try {
-		LOOKAHEAD(2)  inst_asig() <tPCOMA>
-	|	inst_get() <tPCOMA>
-	|	inst_skip_line() <tPCOMA>
-	|	inst_int2char() <tPCOMA>
-	|	inst_char2int() <tPCOMA>
-	|	inst_escribir() <tPCOMA> 
-	| 	inst_escribir_linea() <tPCOMA>
-	|	inst_declaracion_metodo()
-	|	inst_declaracion_variable() <tPCOMA>
-	|	inst_while()
-	| 	inst_seleccion() 
-	|	LOOKAHEAD(2)  inst_invocacion() <tPCOMA>
-	|	inst_return() <tPCOMA>
+		LOOKAHEAD(2)  inst_asig() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
+	|	inst_get() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
+	|	inst_skip_line() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
+	|	inst_int2char() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
+	|	inst_char2int() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
+	|	inst_escribir() <tPCOMA>  {System.out.println(tabla.toString()+"\n\n\n");}
+	| 	inst_escribir_linea() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
+	|	inst_declaracion_metodo() {System.out.println(tabla.toString()+"\n\n\n");}
+	|	inst_declaracion_variable() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
+	|	inst_while() {System.out.println(tabla.toString()+"\n\n\n");}
+	| 	inst_seleccion()  {System.out.println(tabla.toString()+"\n\n\n");}
+	|	LOOKAHEAD(2)  inst_invocacion() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
+	|	inst_return() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
 	}
 	catch(ParseException e) {
 		System.out.println(e.toString());
@@ -329,34 +328,42 @@ void inst_declaracion_func() :
 	Symbol.Types tipo = Symbol.Types.UNDEFINED;
 }
 {
-	<tFUNCTION> tipo = tipos() nombre = <tID> (argumentos())? <tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
+	<tFUNCTION> tipo = tipos() nombre = <tID> (argumentos())?
 	{
 		try{
-			SymbolFunction s = new SymbolFunction(nombre.image,null,tipo); //TODO: numero de params
-			s.constant = true ;
-			tabla.insertSymbol(s);	
+			SymbolProcedure s = new SymbolProcedure(nombre.image, null); //TODO numero de parametros
+			s.constant = true;
+			tabla.insertSymbol(s);
 			tabla.insertBlock();
 		}catch(AlreadyDefinedSymbolException e){
 			errorSem.deteccion(e, nombre );
 		}
 	}
+	<tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
+	{
+		tabla.removeBlock();
+	}
 }
 //PROCEDIMIENTO
 void inst_declaracion_proc():
 {
-	Token nombre = null ;
+	Token nombre = null;
 }
 {
-	<tPROCEDURE> nombre = <tID> (argumentos())? <tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
+	<tPROCEDURE> nombre = <tID> (argumentos())?
 	{
 		try{
 			SymbolProcedure s = new SymbolProcedure(nombre.image, null); //TODO numero de parametros
 			s.constant = true;
-			tabla.insertSymbol(s);	
+			tabla.insertSymbol(s);
 			tabla.insertBlock();
 		}catch(AlreadyDefinedSymbolException e){
 			errorSem.deteccion(e, nombre );
 		}
+	}
+	<tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
+	{
+		tabla.removeBlock();
 	}
 }
 
