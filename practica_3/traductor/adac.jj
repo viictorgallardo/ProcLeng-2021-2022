@@ -522,8 +522,9 @@ Symbol asignable() :
 			if(expr.type != Symbol.Types.INT){ // se mira si no se indexa con entero
 				errorSem.deteccion(new TypeErrorException(), nombre, Symbol.Types.INT);
 			}else{
-				if(expr.value <= 0 || expr.value > output.maxInd){
-					errorSem.deteccion(new IndexOOB(),nombre);
+			
+				if(((SymbolInt)expr).value <= 0 || ((SymbolInt)expr).value > ((SymbolArray)output).maxInd){
+					errorSem.deteccion(new IndexOOB(),nombre,((SymbolInt)expr).value);
 				}
 			}	
 		}catch(SymbolNotFoundException e){
