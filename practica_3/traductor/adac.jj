@@ -155,6 +155,7 @@ void S () :
 
 void instruccion () :
 {
+	System.out.println(tabla.toString()+"\n\n\n");
 
 }
 {
@@ -231,59 +232,63 @@ void inst_declaracion_variable() :
 	}
 }
 
-Atributos variable(Symbol.Types tipo) :
+Symbol variable(Symbol.Types tipo) :
 {
 	Token nombre;
-	Token dim;
-	
-
+	Token dim = null;
 }
 {
 	nombre = <tID> (<tCOPEN> dim = <tNUM> <tCCLOSE>)?
 	{
 
-
+	Symbol s;
 	if(dim != null){
-		SymbolArray s = new SymbolArray(nombre.image,dim.image,tipo);
+		s = new SymbolArray(nombre.image,Integer.parseInt(dim.image),tipo);
+		s.constant = false;
+		return s;
 	}
-	if (tipo == Symbol.Types.INT) {		//INT
-		SymbolInt s = new SymbolInt(nombre.image);
+	switch (tipo) {
+		case INT:
+			s = new SymbolInt(nombre.image);
+			s.constant = false;
+			try{
+				tabla.insertSymbol(s);
+			}
+			catch(AlreadyDefinedSymbolException e){
+				errorSem.deteccion(e,nombre);
+			}
+			return s;
+		
+		case BOOL:
+			s = new SymbolBool(nombre.image);
+			s.constant = false;
+			try{
+				tabla.insertSymbol(s);
+			}
+			catch(AlreadyDefinedSymbolException e){
+				errorSem.deteccion(e,nombre);
+			}
+			return s;
+		
+		case CHAR:
+			s = new SymbolChar(nombre.image);
+			s.constant = false;
+			try{
+				tabla.insertSymbol(s);
+			}
+			catch(AlreadyDefinedSymbolException e){
+				errorSem.deteccion(e,nombre);
+			}
+			return s;
+
+		default:
+			errorSem.deteccion(new TypeErrorException(), nombre, Symbol.Types.INT,Symbol.Types.CHAR,Symbol.Types.BOOL);
+			return null;
+			break;
 	}
-	else if (tipo == Symbol.Types.BOOL) {
-		SymbolBool s = new SymbolBool(nombre.image);
-	}
-	else if (tipo == Symbol.Types.CHAR) {
-		SymbolChar s = new SymbolChar(nombre.image);
-	}
-	s.constant = false;
-	try{
-		tabla.insert(s);
-	}
-	catch(AlreadyDefinedSymbolException e){
-		System.err.println("Error: " + nombre.image + "ya esta declarado");
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-	if(expr_devuelta != null){
-		// EN CASO DE VECTOR
-		if(expr_devuelta.type != Symbol.Types.INT){ // EXPRESION TIENE QUE TENER UN VALOR NUMERICO
-			errorSem.deteccion(new TypeErrorException(), nombre, Symbol.Types.INT);
-		}else{
-			caracteristicas.dim = expr_devuelta.dim;	
-		}
 	
-	}
-	return caracteristicas;
+
+	
 	}
 }
 
@@ -469,7 +474,11 @@ Symbol expr() :
 	Symbol output;
 }
 {
-  	factor()  ( operador() factor() )*
+  	output = factor()  ( operador() factor() )*
+	{
+		return output;
+		//TODO: Hacer operadores con los dos factores
+	}	
 }
 
 void operador() :
@@ -511,15 +520,17 @@ Symbol factor() :
 	//Acceder al vector
 	try {
 		output = tabla.getSymbol(t1.image);
+		//Comprobar que el index es un int
+		if (data.type != Symbol.Types.INT) {
+			errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.INT);
+		}
+		//TODO: Acceder a la componente del vector (tirar error IndexOOB si no existe)
+		return output; //Temporal
 	}
 	catch(SymbolNotFoundException e) {
 		errorSem.deteccion(e, t1);
 	}
-	//Comprobar que el index es un int
-	if (data.type != Symbol.Types.INT) {
-		errorSem.deteccion(new TypeErrorException(), data, Symbol.Types.INT);
-	}
-	//TODO: Acceder a la componente del vector (tirar error IndexOOB si no existe)
+	
 	}
 | 	inst_char2int()
 |	inst_int2char()

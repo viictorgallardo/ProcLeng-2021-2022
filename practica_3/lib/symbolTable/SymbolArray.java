@@ -24,7 +24,7 @@ public class SymbolArray extends Symbol implements Cloneable {
         baseType = Types.UNDEFINED;
     }
 
-    public SymbolArray(String _name, int _minInd, int _maxInd, Types _baseType) throws TypeErrorException {
+    public SymbolArray(String _name, int _minInd, int _maxInd, Types _baseType) {
         super(_name, Types.ARRAY, ParameterClass.NONE);
         minInd = _minInd;
         maxInd = _maxInd;
@@ -38,12 +38,9 @@ public class SymbolArray extends Symbol implements Cloneable {
         else if (_baseType == Types.CHAR) {
             v = new Vector<Character>(_maxInd-_minInd);
         }
-        else {
-            throw new TypeErrorException();
-        } 
     }
 
-    public SymbolArray(String _name, int _minInd, int _maxInd, Types _baseType, ParameterClass _class) throws TypeErrorException {
+    public SymbolArray(String _name, int _minInd, int _maxInd, Types _baseType, ParameterClass _class) {
         super(_name, Types.ARRAY, _class); 
         minInd = _minInd;
         maxInd = _maxInd;
@@ -57,12 +54,9 @@ public class SymbolArray extends Symbol implements Cloneable {
         else if (_baseType == Types.CHAR) {
             v = new Vector<Character>(_maxInd-_minInd);
         }
-        else {
-            throw new TypeErrorException();
-        }
     }
 
-    public SymbolArray(String _name, int _numComp, Types _baseType) throws TypeErrorException {
+    public SymbolArray(String _name, int _numComp, Types _baseType) {
         super(_name, Types.ARRAY, ParameterClass.NONE);
         minInd = 0;
         maxInd = _numComp - 1;
@@ -76,12 +70,9 @@ public class SymbolArray extends Symbol implements Cloneable {
         else if (_baseType == Types.CHAR) {
             v = new Vector<Character>(_numComp);
         }
-        else {
-            throw new TypeErrorException();
-        }
     }
 
-    public SymbolArray(String _name, int _numComp, Types _baseType, ParameterClass _class) throws TypeErrorException {
+    public SymbolArray(String _name, int _numComp, Types _baseType, ParameterClass _class) {
         super(_name, Types.ARRAY, _class); 
         minInd = 0;
         maxInd = _numComp - 1;
@@ -94,9 +85,6 @@ public class SymbolArray extends Symbol implements Cloneable {
         }
         else if (_baseType == Types.CHAR) {
             v = new Vector<Character>(_numComp);
-        }
-        else {
-            throw new TypeErrorException();
         }
     }
 

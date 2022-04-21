@@ -1,0 +1,6 @@
+procedure main is
+integer i,j;
+character a;
+begin
+    i := 10;
+end
