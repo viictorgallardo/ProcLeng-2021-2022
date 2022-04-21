@@ -10,9 +10,9 @@
 
 package lib.symbolTable.exceptions;
 
-public class IndexOOB extends Exception {
+public class IndexOOBException extends Exception {
 
-	public IndexOOB() {
+	public IndexOOBException() {
 
 	}
 }
