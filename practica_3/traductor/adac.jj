@@ -28,6 +28,7 @@ import lib.symbolTable.SymbolTable;
 import lib.symbolTable.exceptions.AlreadyDefinedSymbolException;
 import lib.symbolTable.exceptions.SymbolNotFoundException;
 import lib.symbolTable.exceptions.TypeErrorException;
+import lib.symbolTable.exceptions.IndexOOBException;
 
 public class adac {
 	public class Atributos {
@@ -523,7 +524,7 @@ Symbol asignable() :
 				errorSem.deteccion(new TypeErrorException(), nombre, Symbol.Types.INT);
 			}else{
 				if(expr.value <= 0 || expr.value > output.maxInd){
-					errorSem.deteccion(new IndexOOB(),nombre);
+					errorSem.deteccion(new IndexOOBException(),nombre);
 				}
 			}	
 		}catch(SymbolNotFoundException e){
@@ -598,56 +599,92 @@ Symbol expr() :
 					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
 				}
 				//Calculo
-				output = new SymbolBool((((SymbolBool)output).value && ((SymbolBool)f).value));
+				output = new SymbolBool(((SymbolBool)output).value && ((SymbolBool)f).value);
 				return output;
 			case tIGUAL:
-				//Los dos tienen que ser booleanos
-				if (output.type!=Symbol.Types.BOOL || f.type!=Symbol.Types.BOOL) {
-					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+				//Los dos tienen que ser enteros o chars
+				if ((output.type==Symbol.Types.INT && f.type==Symbol.Types.INT) || (output.type==Symbol.Types.CHAR && f.type==Symbol.Types.CHAR)) { 
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT,Symbol.Types.CHAR);
 				}
 				//Calculo
-				output = new SymbolBool((((SymbolBool)output).value == ((SymbolBool)f).value));
-				return output;
+				if (output.type==Symbol.Types.INT) { //Son los dos enteros
+					output = new SymbolInt(((SymbolBool)output).value == ((SymbolBool)f).value);
+					return output;
+				}
+				else { //Son los dos chars
+					output = new SymbolChar(((SymbolBool)output).value == ((SymbolBool)f).value);
+					return output;
+				}
 			case tMAYOR:
-				//Los dos tienen que ser booleanos
-				if (output.type!=Symbol.Types.BOOL || f.type!=Symbol.Types.BOOL) {
-					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+				//Los dos tienen que ser enteros o chars
+				if ((output.type==Symbol.Types.INT && f.type==Symbol.Types.INT) || (output.type==Symbol.Types.CHAR && f.type==Symbol.Types.CHAR)) { 
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT,Symbol.Types.CHAR);
 				}
 				//Calculo
-				output = new SymbolBool((((SymbolBool)output).value > ((SymbolBool)f).value));
-				return output;
+				if (output.type==Symbol.Types.INT) { //Son los dos enteros
+					output = new SymbolInt(((SymbolBool)output).value > ((SymbolBool)f).value);
+					return output;
+				}
+				else { //Son los dos chars
+					output = new SymbolChar(((SymbolBool)output).value > ((SymbolBool)f).value);
+					return output;
+				}
 			case tMAYORI:
-				//Los dos tienen que ser booleanos
-				if (output.type!=Symbol.Types.BOOL || f.type!=Symbol.Types.BOOL) {
-					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+				//Los dos tienen que ser enteros o chars
+				if ((output.type==Symbol.Types.INT && f.type==Symbol.Types.INT) || (output.type==Symbol.Types.CHAR && f.type==Symbol.Types.CHAR)) { 
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT,Symbol.Types.CHAR);
 				}
 				//Calculo
-				output = new SymbolBool((((SymbolBool)output).value >= ((SymbolBool)f).value));
-				return output;
+				if (output.type==Symbol.Types.INT) { //Son los dos enteros
+					output = new SymbolInt(((SymbolBool)output).value >= ((SymbolBool)f).value);
+					return output;
+				}
+				else { //Son los dos chars
+					output = new SymbolChar(((SymbolBool)output).value >= ((SymbolBool)f).value);
+					return output;
+				}
 			case tMENOR:
-				//Los dos tienen que ser booleanos
-				if (output.type!=Symbol.Types.BOOL || f.type!=Symbol.Types.BOOL) {
-					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+				//Los dos tienen que ser enteros o chars
+				if ((output.type==Symbol.Types.INT && f.type==Symbol.Types.INT) || (output.type==Symbol.Types.CHAR && f.type==Symbol.Types.CHAR)) { 
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT,Symbol.Types.CHAR);
 				}
 				//Calculo
-				output = new SymbolBool((((SymbolBool)output).value < ((SymbolBool)f).value));
-				return output;
+				if (output.type==Symbol.Types.INT) { //Son los dos enteros
+					output = new SymbolInt(((SymbolBool)output).value < ((SymbolBool)f).value);
+					return output;
+				}
+				else { //Son los dos chars
+					output = new SymbolChar(((SymbolBool)output).value < ((SymbolBool)f).value);
+					return output;
+				}
 			case tMENORI:
-				//Los dos tienen que ser booleanos
-				if (output.type!=Symbol.Types.BOOL || f.type!=Symbol.Types.BOOL) {
-					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+				//Los dos tienen que ser enteros o chars
+				if ((output.type==Symbol.Types.INT && f.type==Symbol.Types.INT) || (output.type==Symbol.Types.CHAR && f.type==Symbol.Types.CHAR)) { 
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT,Symbol.Types.CHAR);
 				}
 				//Calculo
-				output = new SymbolBool((((SymbolBool)output).value <= ((SymbolBool)f).value));
-				return output;
+				if (output.type==Symbol.Types.INT) { //Son los dos enteros
+					output = new SymbolInt(((SymbolBool)output).value <= ((SymbolBool)f).value);
+					return output;
+				}
+				else { //Son los dos chars
+					output = new SymbolChar(((SymbolBool)output).value <= ((SymbolBool)f).value);
+					return output;
+				}
 			case tDISTINTO:
-				//Los dos tienen que ser booleanos
-				if (output.type!=Symbol.Types.BOOL || f.type!=Symbol.Types.BOOL) {
-					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+				//Los dos tienen que ser enteros o chars
+				if ((output.type==Symbol.Types.INT && f.type==Symbol.Types.INT) || (output.type==Symbol.Types.CHAR && f.type==Symbol.Types.CHAR)) { 
+					errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT,Symbol.Types.CHAR);
 				}
 				//Calculo
-				output = new SymbolBool((((SymbolBool)output).value != ((SymbolBool)f).value));
-				return output;
+				if (output.type==Symbol.Types.INT) { //Son los dos enteros
+					output = new SymbolInt(((SymbolBool)output).value != ((SymbolBool)f).value);
+					return output;
+				}
+				else { //Son los dos chars
+					output = new SymbolChar(((SymbolBool)output).value != ((SymbolBool)f).value);
+					return output;
+				}
 			case tMOD:
 				//Los dos tienen que ser enteros
 				if (output.type!=Symbol.Types.INT || f.type!=Symbol.Types.INT) {
