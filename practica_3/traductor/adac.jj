@@ -164,19 +164,19 @@ void instruccion () :
 }
 {
 	try {
-		LOOKAHEAD(2)  inst_asig() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
-	|	inst_get() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
-	|	inst_skip_line() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
-	|	inst_int2char() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
-	|	inst_char2int() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
-	|	inst_escribir() <tPCOMA>  {System.out.println(tabla.toString()+"\n\n\n");}
-	| 	inst_escribir_linea() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
-	|	inst_declaracion_metodo() {System.out.println(tabla.toString()+"\n\n\n");}
-	|	inst_declaracion_variable() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
-	|	inst_while() {System.out.println(tabla.toString()+"\n\n\n");}
-	| 	inst_seleccion()  {System.out.println(tabla.toString()+"\n\n\n");}
-	|	LOOKAHEAD(2)  inst_invocacion() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
-	|	inst_return() <tPCOMA> {System.out.println(tabla.toString()+"\n\n\n");}
+		LOOKAHEAD(2)  inst_asig() <tPCOMA> 
+	|	inst_get() <tPCOMA> 
+	|	inst_skip_line() <tPCOMA> 
+	|	inst_int2char() <tPCOMA> 
+	|	inst_char2int() <tPCOMA> 
+	|	inst_escribir() <tPCOMA>  
+	| 	inst_escribir_linea() <tPCOMA> 
+	|	inst_declaracion_metodo() 
+	|	inst_declaracion_variable() <tPCOMA> 
+	|	inst_while() 
+	| 	inst_seleccion()  
+	|	LOOKAHEAD(2)  inst_invocacion() <tPCOMA> 
+	|	inst_return() <tPCOMA> 
 	}
 	catch(ParseException e) {
 		System.out.println(e.toString());
@@ -553,8 +553,9 @@ Attributes expr() :
 	Token op;
 }
 {
-  	output=factor()  ( op=operador() f=factor()
+  	output=factor() (op=operador() f=factor()
 	{
+		System.out.println("Operacion "+op+"\n    "+output.toString()+"    "+f.toString());
 		if(op.kind==tSUMA) {
 			//Los dos tienen que ser enteros
 			if (output.type!=Symbol.Types.INT || f.type!=Symbol.Types.INT) {
@@ -725,7 +726,7 @@ Token operador() :
 	Token output;
 }
 {
-	output=<tSUMA> | output=<tRESTA> | output=<tMUL> | output=<tDIV> | output=<tOR> | output=<tAND> | output=<tIGUAL> | output=<tMAYOR> | output=<tMAYORI> | output=<tMENOR> | output=<tMENORI> | output=<tDISTINTO> | output=<tMOD>
+	(output=<tSUMA> | output=<tRESTA> | output=<tMUL> | output=<tDIV> | output=<tOR> | output=<tAND> | output=<tIGUAL> | output=<tMAYOR> | output=<tMAYORI> | output=<tMENOR> | output=<tMENORI> | output=<tDISTINTO> | output=<tMOD>)
 	{
 		return output;
 	}
@@ -740,21 +741,25 @@ Attributes factor() :
 	t1 = <tNUM>
 	{
 		output = new Attributes(Integer.parseInt(t1.image));
+		System.out.println(output.toString());
 		return output;
 	}
 |	t1 = <tCAD>
 	{
 		output = new Attributes(t1.image);
+		System.out.println(output.toString());
 		return output;
 	}
 	t1 = <tCH>
 	{
 		output = new Attributes(t1.image);
+		System.out.println(output.toString());
 		return output;
 	}
 |	(t1=<tTRUE> | t1=<tFALSE>)
 	{
 		output = new Attributes(Boolean.parseBoolean(t1.image));
+		System.out.println(output.toString());
 		return output;
 	}
 |	LOOKAHEAD(2)  t1=<tID> <tCOPEN> data=expr() <tCCLOSE>
@@ -780,6 +785,7 @@ Attributes factor() :
 				}
 				output = new Attributes(((SymbolArray)v).baseType,((SymbolArray)v).parClass);
 			}
+			System.out.println(output.toString());
 			return output;
 		}
 		catch(SymbolNotFoundException e) {
@@ -789,10 +795,12 @@ Attributes factor() :
 	}
 | 	output=inst_char2int()
 	{
+		System.out.println(output.toString());
 		return output;
 	}
 |	output=inst_int2char()
 	{
+		System.out.println(output.toString());
 		return output;
 	}
 |	LOOKAHEAD(2)  inst_invocacion()
@@ -805,6 +813,7 @@ Attributes factor() :
 	}
 |	<tPOPEN> output=expr() <tPCLOSE>
 	{
+		System.out.println(output.toString());
 		return output;
 	}
 |	t1=<tNOT> output=factor()
@@ -814,6 +823,7 @@ Attributes factor() :
 			return output;
 		}
 		output.valBool = !output.valBool;
+		System.out.println(output.toString());
 		return output;
 	}
 }

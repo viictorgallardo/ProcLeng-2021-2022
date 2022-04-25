@@ -9,5 +9,5 @@ begin
 end
 
 begin
-    i := 10;
+    i := 10+2;
 end
