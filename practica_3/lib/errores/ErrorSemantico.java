@@ -38,11 +38,11 @@ public class ErrorSemantico {
 		System.err.println(sep);
 	}
 
-	public static void deteccion(IndexOOBException e, Token t, SymbolInt index) {
+	public static void deteccion(IndexOOBException e, Token t, int index) {
 		contadorErrores++;
 		System.err.println(sep);
 		System.err.println("ERROR SEMÁNTICO (" + t.beginLine + "," + t.beginColumn + "): " +
-				"Símbolo: '" + t.image + "'. Se ha intentado acceder a la componente inexistente: " + index.value);
+				"Símbolo: '" + t.image + "'. Se ha intentado acceder a la componente inexistente: " + index);
 		System.err.println(sep);
 	}
 
