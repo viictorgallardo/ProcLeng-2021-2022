@@ -10,7 +10,6 @@
 package lib.tools;
 
 import java.util.*;
-import traductor.Token;
 import lib.attributes.*;
 import lib.symbolTable.*;
 import lib.symbolTable.exceptions.*;
@@ -22,6 +21,4 @@ public class SemanticFunctions {
 	public SemanticFunctions() {
 		errSem = new ErrorSemantico();
 	}
-
-	//COMPLETAR
 }
