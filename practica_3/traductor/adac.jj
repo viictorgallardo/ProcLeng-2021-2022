@@ -800,9 +800,22 @@ Attributes factor() :
 	{
 		//TODO
 	}
-|	<tID>
+|	t1=<tID>
 	{
-		//TODO: Pillar de la tabla de simbolos, devolver ese
+		try {
+			// Symbol v = tabla.getSymbol(t1.image);
+			// if (v.type!=Symbol.Types.INT && v.type!=Symbol.Types.CHAR && v.type!=Symbol.Types.BOOL) {
+			// 	errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.INT, Symbol.Types.CHAR, Symbol.Types.BOOL);
+			// }
+			// output = new Attributes(v.value);
+			// return output;
+
+			//TODO
+		}
+		catch(SymbolNotFoundException e) {
+			errorSem.deteccion(e, t1);
+			//TODO: return aqui
+		}
 	}
 |	<tPOPEN> output=expr(a) <tPCLOSE>
 	{
