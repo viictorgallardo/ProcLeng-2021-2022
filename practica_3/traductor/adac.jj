@@ -7,7 +7,7 @@
 //*****************************************************************
 
 options {
-   DEBUG_PARSER = true;
+  // DEBUG_PARSER = true;
 }
 
 
@@ -499,9 +499,33 @@ void inst_asig() :
 {
 	asig = asignable() temp=<tASIGNACION> expr = expr(a)
 	{
-		if (asig.type != expr.type){ // SE COMPRUEBA QUE EL ASIGNABLE Y LA EXPRESION A ASIGNAR SEAN DEL MISMO TIPO
-			errorSem.deteccion(new TypeErrorException(), temp, asig.type);
+
+		
+		if(asig.constant){
+			System.err.println("Error: " + asig.name + "es una cte. usada como variable");
 		}
+		else{
+			if (asig.type != expr.type){ // SE COMPRUEBA QUE EL ASIGNABLE Y LA EXPRESION A ASIGNAR SEAN DEL MISMO TIPO
+				errorSem.deteccion(new TypeErrorException(), temp, asig.type);
+			}
+			else{
+				if(asig.type == Symbol.Types.INT){
+					SymbolInt s = (SymbolInt)asig;
+					s.value = expr.valInt;
+				}
+				if(asig.type == Symbol.Types.CHAR){
+					SymbolChar s = (SymbolChar)asig;
+					s.value = expr.valChar;
+				}
+				if(asig.type == Symbol.Types.BOOL){
+					SymbolBool s = (SymbolBool)asig;
+					s.value = expr.valBool;
+				}
+			}
+		}
+		System.out.println("Estamos en asig");
+		System.out.println(asig.toString());
+		System.out.println("Fin asig");
 	}
 }
 

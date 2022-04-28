@@ -9,5 +9,9 @@ begin
 end
 
 begin
-    i := 10+2 div 3;
+    i := 5;
+    i := 7;
+
+    a := 'b';
+    a := 'a';
 end
