@@ -7,7 +7,7 @@
 //*****************************************************************
 
 options {
-//   DEBUG_PARSER = true;
+  //DEBUG_PARSER = true;
 }
 
 
@@ -236,7 +236,7 @@ void inst_declaracion_variable() :
 	tipo = tipos() variable(tipo) (<tCOMA> variable(tipo))* 
 	{
 		
-	
+		
 		
 	}
 }
@@ -250,10 +250,20 @@ Symbol variable(Symbol.Types tipo) :
 	nombre = <tID> (<tCOPEN> dim = <tNUM> <tCCLOSE>)?
 	{
 
+		System.out.println("Declaramos variable");
+		System.out.println(tabla.toString());
+		System.out.println("Fin declaracion");
+
 	Symbol s;
 	if(dim != null){
 		s = new SymbolArray(nombre.image,Integer.parseInt(dim.image),tipo);
 		s.constant = false;
+		try{
+			tabla.insertSymbol(s);
+		}
+		catch(AlreadyDefinedSymbolException e){
+			errorSem.deteccion(e,nombre);
+		}
 		return s;
 	}
 	switch (tipo) {
@@ -289,14 +299,13 @@ Symbol variable(Symbol.Types tipo) :
 				errorSem.deteccion(e,nombre);
 			}
 			return s;
-
 		default:
 			errorSem.deteccion(new TypeErrorException(), nombre, Symbol.Types.INT,Symbol.Types.CHAR,Symbol.Types.BOOL);
 			return null;
 			break;
-	}
-	
-
+		}
+		
+		
 	
 	}
 }
@@ -524,7 +533,7 @@ void inst_asig() :
 			}
 		}
 		System.out.println("Estamos en asig");
-		System.out.println(asig.toString());
+		System.out.println(tabla.toString());
 		System.out.println("Fin asig");
 	}
 }

@@ -1,6 +1,7 @@
 procedure main is
 integer i,j;
 character a;
+integer vec[10];
 
 function integer test (val integer A) is
 boolean x;
@@ -11,7 +12,9 @@ end
 begin
     i := 5;
     i := 7;
-
+   
+    vec[3] := 5;
+    vec[4] := 6;
     a := 'b';
     a := 'a';
 end
