@@ -7,7 +7,7 @@
 //*****************************************************************
 
 options {
-  // DEBUG_PARSER = true;
+//   DEBUG_PARSER = true;
 }
 
 
@@ -767,9 +767,9 @@ Attributes factor() :
 		System.out.println(output.toString());
 		return output;
 	}
-	t1 = <tCH>
+|	t1 = <tCH>
 	{
-		output = new Attributes(t1.image);
+		output = new Attributes(t1.image.charAt(1));
 		System.out.println(output.toString());
 		return output;
 	}
