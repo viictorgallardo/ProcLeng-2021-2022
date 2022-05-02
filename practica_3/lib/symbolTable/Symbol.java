@@ -27,7 +27,7 @@ abstract public class Symbol implements Cloneable {
     public long dir; 
     //mi tipo
     public Types type;
-    // es constante (En adac, siempre será FALSE)  
+    // es constante (En adac, siempre será FALSE)
     public boolean constant;
     public int nivel; //nivel dentro de la TS
 

@@ -514,19 +514,24 @@ void inst_asig() :
 			System.err.println("Error: " + asig.name + "es una cte. usada como variable");
 		}
 		else{
-			if (asig.type != expr.type){ // SE COMPRUEBA QUE EL ASIGNABLE Y LA EXPRESION A ASIGNAR SEAN DEL MISMO TIPO
+			if ((asig.type != expr.type) && (asig.type != Symbol.Types.ARRAY)){ // SE COMPRUEBA QUE EL ASIGNABLE Y LA EXPRESION A ASIGNAR SEAN DEL MISMO TIPO
+				System.out.println("El tipo de asignable es " + asig.type);
+				System.out.println("El tipo de la expr es " + expr.type);
 				errorSem.deteccion(new TypeErrorException(), temp, asig.type);
 			}
 			else{
-				if(asig.type == Symbol.Types.INT){
+				if(asig.type == Symbol.Types.ARRAY){
+
+				}
+				else if(asig.type == Symbol.Types.INT){
 					SymbolInt s = (SymbolInt)asig;
 					s.value = expr.valInt;
 				}
-				if(asig.type == Symbol.Types.CHAR){
+				else if(asig.type == Symbol.Types.CHAR){
 					SymbolChar s = (SymbolChar)asig;
 					s.value = expr.valChar;
 				}
-				if(asig.type == Symbol.Types.BOOL){
+				else if(asig.type == Symbol.Types.BOOL){
 					SymbolBool s = (SymbolBool)asig;
 					s.value = expr.valBool;
 				}
@@ -551,13 +556,17 @@ Symbol asignable() :
 {
 	LOOKAHEAD(2)  nombre = <tID> <tCOPEN> expr = expr(a) <tCCLOSE>
 	{
-		try{ //TODO: QUE LA CONSTANTE CON LA QUE SE INDEXA EL VECTOR EXISTA
+		try{
 			//buscamos el simbolo asignable en la tabla de simbolos
 			output = tabla.getSymbol(nombre.image);
+			// Se mira si el vector es de tipo array
+			if(output.type != Symbol.Types.ARRAY) {
+				errorSem.deteccion(new TypeErrorException(), nombre, Symbol.Types.ARRAY);
+			}
 			if(expr.type != Symbol.Types.INT){ // se mira si no se indexa con entero
 				errorSem.deteccion(new TypeErrorException(), nombre, Symbol.Types.INT);
-			}else{
-			
+			}
+			else{
 				if(expr.valInt < ((SymbolArray)output).minInd || expr.valInt >= ((SymbolArray)output).maxInd){
 					errorSem.deteccion(new IndexOOBException(),nombre, expr.valInt);
 				}
@@ -798,7 +807,7 @@ Attributes factor() :
 				errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.INT);
 			}
 			//Comprobar que el simbolo es un array
-			if (v.getClass() != SymbolArray.class) {
+			if (v.type != Symbol.Types.ARRAY) {
 				errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.ARRAY);
 				output = new Attributes();
 			}
