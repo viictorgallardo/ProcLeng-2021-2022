@@ -187,12 +187,15 @@ Attributes inst_int2char() :
 {
 	Attributes output;
 	Attributes a = new Attributes();
+	Token temp;
 }
 {
-	<tINT2CHAR> <tPOPEN> output=expr(a) <tPCLOSE>
+	<tINT2CHAR> temp=<tPOPEN> output=expr(a) <tPCLOSE>
 	{
-		//TODO: convertir output a char
-		return output;
+		if(output.type != Symbol.Types.INT) {
+			errorSem.deteccion(new TypeErrorException(),temp,Symbol.Types.INT);
+		}
+		return new Attributes((char)(output.valInt));
 	}
 }
 
@@ -200,12 +203,15 @@ Attributes inst_char2int() :
 {
 	Attributes output;
 	Attributes a = new Attributes();
+	Token temp;
 }
 {
-	<tCHAR2INT> <tPOPEN> output=expr(a) <tPCLOSE>
+	<tCHAR2INT> temp=<tPOPEN> output=expr(a) <tPCLOSE>
 	{
-		//TODO: convertir output a int
-		return output;
+		if(output.type != Symbol.Types.CHAR) {
+			errorSem.deteccion(new TypeErrorException(),temp,Symbol.Types.CHAR);
+		}
+		return new Attributes(Character.getNumericValue(output.valChar));
 	}
 }
 
@@ -499,8 +505,6 @@ void inst_asig() :
 {
 	asig = asignable() temp=<tASIGNACION> expr = expr(a)
 	{
-
-		
 		if(asig.constant){
 			System.err.println("Error: " + asig.name + "es una cte. usada como variable");
 		}
