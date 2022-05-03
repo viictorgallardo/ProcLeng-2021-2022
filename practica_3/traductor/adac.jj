@@ -354,7 +354,7 @@ void inst_declaracion_func() :
 	<tFUNCTION> tipo = tipos() nombre = <tID> (argumentos())?
 	{
 		try{
-			SymbolProcedure s = new SymbolProcedure(nombre.image, null); //TODO numero de parametros
+			SymbolProcedure s = new SymbolFunction(nombre.image, null); //TODO numero de parametros
 			s.constant = true;
 			tabla.insertSymbol(s);
 			tabla.insertBlock();
@@ -451,11 +451,24 @@ void list_params():
 
 void parametro():
 {
-	Attributes a = new Attributes();
+	
 }
 {
-	<tREF> tipos() <tID> (<tCOPEN> expr(a) <tCCLOSE>)? (<tCOMA> <tID> (<tCOPEN> expr(a) <tCCLOSE>)?)*
-|	<tVAL> tipos() <tID> (<tCOPEN> expr(a) <tCCLOSE>)? (<tCOMA> <tID> (<tCOPEN> expr(a) <tCCLOSE>)?)*
+	ref = <tREF> tipo = tipos() name = <tID> (<tCOPEN> dim = expr(a) <tCCLOSE>)? masParametros();
+	{
+
+	}
+
+|	<tVAL> tipos() <tID> (<tCOPEN> expr(a) <tCCLOSE>)? masParametros();
+}
+
+
+void masParametros() :
+{
+
+}
+{
+	(<tCOMA> <tID> (<tCOPEN> expr(a) <tCCLOSE>)?)*
 }
 
 
