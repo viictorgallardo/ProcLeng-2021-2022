@@ -1,8 +1,3 @@
-procedure main is
-integer i,j;
-character a;
-integer vec[10];
-
 function integer test (val integer A) is
 boolean x;
 begin
@@ -18,3 +13,6 @@ begin
     a := 'b';
     a := 'a';
 end
+
+
+

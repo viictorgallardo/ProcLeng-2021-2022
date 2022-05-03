@@ -36,6 +36,100 @@ import java.util.ArrayList;
 public class adac {
 	static SymbolTable tabla = new SymbolTable();
 	static ErrorSemantico errorSem = new ErrorSemantico();
+
+	
+
+//FUNCION QUE CREA EL SIMBOLO CORRESPONDIENTE AL PARAMETRO DE UNA FUNCION.
+// DADO UN NOMBRE DIM, TIPO Y SI ES POR REF O POR VAL DEVUELVE EL SIMBOLO
+// Si se le indica tambien lo inserta en la tabla
+
+	public static Symbol crearParametro(Token nombre, Attributes dim, Symbol.Types tipo, 
+	boolean ref , boolean insertarEnTabla){
+		Symbol s = null;
+		
+		if(dim != null){
+			s = new SymbolArray(nombre.image,dim.valInt,tipo);
+			if(ref == true){
+				s.parClass = Symbol.ParameterClass.REF;
+			}
+			else{
+				s.parClass = Symbol.ParameterClass.VAL;
+			}
+			s.constant = false;
+			if(insertarEnTabla == true){
+				try{
+					tabla.insertSymbol(s);
+				}
+				catch(AlreadyDefinedSymbolException e){
+					errorSem.deteccion(e,nombre);
+				}	
+			}
+			return s;
+		}
+		switch (tipo) {
+			case INT:
+				s = new SymbolInt(nombre.image);
+				if(ref == true){
+					s.parClass = Symbol.ParameterClass.REF;
+				}
+				else{
+					s.parClass = Symbol.ParameterClass.VAL;
+				}
+				s.constant = false;
+				if(insertarEnTabla == true){
+					try{
+						tabla.insertSymbol(s);
+					}
+					catch(AlreadyDefinedSymbolException e){
+						errorSem.deteccion(e,nombre);
+					}	
+				}
+				return s;
+			
+			case BOOL:
+				s = new SymbolBool(nombre.image);
+				if(ref == true){
+					s.parClass = Symbol.ParameterClass.REF;
+				}
+				else{
+					s.parClass = Symbol.ParameterClass.VAL;
+				}
+				s.constant = false;
+				if(insertarEnTabla == true){
+					try{
+						tabla.insertSymbol(s);
+					}
+					catch(AlreadyDefinedSymbolException e){
+						errorSem.deteccion(e,nombre);
+					}	
+				}
+				return s;
+			
+			case CHAR:
+				s = new SymbolChar(nombre.image);
+				if(ref == true){
+					s.parClass = Symbol.ParameterClass.REF;
+				}
+				else{
+					s.parClass = Symbol.ParameterClass.VAL;
+				}
+				s.constant = false;
+				if(insertarEnTabla == true){
+					try{
+						tabla.insertSymbol(s);
+					}
+					catch(AlreadyDefinedSymbolException e){
+						errorSem.deteccion(e,nombre);
+					}	
+				}
+				return s;
+			default:
+				errorSem.deteccion(new TypeErrorException(), nombre, Symbol.Types.INT,Symbol.Types.CHAR,Symbol.Types.BOOL);
+				return null;
+		}
+		
+	}
+
     public static void main(String[] args) {
     	adac parser;
 
@@ -58,6 +152,7 @@ public class adac {
         	System.err.println("SINT_ERROR: " + e.getMessage());
         } 
     }
+
 }
 PARSER_END(adac)
 //------------ descripción del AL
@@ -232,6 +327,9 @@ void inst_skip_line() :
 	<tSKIPLINE> <tCOPEN> <tCCLOSE>
 }
 
+
+
+
 //DECLARACION VARIABLES
 
 void inst_declaracion_variable() :
@@ -252,6 +350,7 @@ Symbol variable(Symbol.Types tipo) :
 {
 	Token nombre;
 	Token dim = null;
+	Symbol s;
 }
 {
 	nombre = <tID> (<tCOPEN> dim = <tNUM> <tCCLOSE>)?
@@ -261,17 +360,18 @@ Symbol variable(Symbol.Types tipo) :
 		System.out.println(tabla.toString());
 		System.out.println("Fin declaracion");
 
-	Symbol s;
-	if(dim != null){
-		s = new SymbolArray(nombre.image,Integer.parseInt(dim.image),tipo);
-		s.constant = false;
-		try{
-			tabla.insertSymbol(s);
-		}
-		catch(AlreadyDefinedSymbolException e){
-			errorSem.deteccion(e,nombre);
-		}
-		return s;
+		
+		if(dim != null){
+			s = new SymbolArray(nombre.image,Integer.parseInt(dim.image),tipo);
+			s.constant = false;
+			try{
+				tabla.insertSymbol(s);
+			}
+			catch(AlreadyDefinedSymbolException e){
+				errorSem.deteccion(e,nombre);
+			}	
+		
+			return s;
 	}
 	switch (tipo) {
 		case INT:
@@ -282,36 +382,39 @@ Symbol variable(Symbol.Types tipo) :
 			}
 			catch(AlreadyDefinedSymbolException e){
 				errorSem.deteccion(e,nombre);
-			}
+			}	
+			
 			return s;
-		
 		case BOOL:
 			s = new SymbolBool(nombre.image);
 			s.constant = false;
+			
 			try{
 				tabla.insertSymbol(s);
 			}
 			catch(AlreadyDefinedSymbolException e){
 				errorSem.deteccion(e,nombre);
-			}
+			}	
+			
 			return s;
 		
 		case CHAR:
 			s = new SymbolChar(nombre.image);
 			s.constant = false;
+			
 			try{
 				tabla.insertSymbol(s);
 			}
 			catch(AlreadyDefinedSymbolException e){
 				errorSem.deteccion(e,nombre);
-			}
+			}	
+			
 			return s;
 		default:
 			errorSem.deteccion(new TypeErrorException(), nombre, Symbol.Types.INT,Symbol.Types.CHAR,Symbol.Types.BOOL);
 			return null;
 			break;
 		}
-		
 		
 	
 	}
@@ -350,15 +453,25 @@ void inst_declaracion_func() :
 {
 	Token nombre = null;
 	Symbol.Types tipo = Symbol.Types.UNDEFINED;
+	ArrayList<Symbol> argums = null;
+	Symbol parametro = null;
 }
 {
-	<tFUNCTION> tipo = tipos() nombre = <tID> (argumentos())?
+	<tFUNCTION> tipo = tipos() nombre = <tID> (argums = argumentos())?
 	{
 		try{
-			SymbolProcedure s = new SymbolFunction(nombre.image, null); //TODO numero de parametros
+			SymbolFunction s = new SymbolFunction(nombre.image, argums,tipo); //TODO numero de parametros
 			s.constant = true;
 			tabla.insertSymbol(s);
 			tabla.insertBlock();
+			if(argums.size() != 0){
+				for(int i =0; i< argums.size(); i++){
+					parametro = argums.get(i);
+					tabla.insertSymbol(parametro);
+				}
+			}
+			s.toString();
+			tabla.toString();
 		}catch(AlreadyDefinedSymbolException e){
 			errorSem.deteccion(e, nombre );
 		}
@@ -372,15 +485,26 @@ void inst_declaracion_func() :
 void inst_declaracion_proc():
 {
 	Token nombre = null;
+	ArrayList<Symbol> argums = null;
+	Symbol parametro = null;
+
 }
 {
-	<tPROCEDURE> nombre = <tID> (argumentos())?
+	<tPROCEDURE> nombre = <tID> (argums = argumentos())?
 	{
 		try{
-			SymbolProcedure s = new SymbolProcedure(nombre.image, null); //TODO numero de parametros
+			SymbolProcedure s = new SymbolProcedure(nombre.image, argums); //TODO numero de parametros
 			s.constant = true;
 			tabla.insertSymbol(s);
 			tabla.insertBlock();
+			if(argums.size() != 0){
+				for(int i =0; i< argums.size(); i++){
+					parametro = argums.get(i);
+					tabla.insertSymbol(parametro);
+				}
+			}
+			
+
 		}catch(AlreadyDefinedSymbolException e){
 			errorSem.deteccion(e, nombre );
 		}
@@ -434,42 +558,101 @@ void masIf():
 	(<tELSE> (instruccion())*)?	 // cadena vacía
 }
 // Regla relativa a los argumentos que se le pasa a una función
-void argumentos() :
+ArrayList<Symbol> argumentos() :
 {
-
+	ArrayList<Symbol> parametros = null;
 }
 {
-	<tPOPEN> (list_params())? <tPCLOSE>
-}
-
-void list_params():
-{
-
-}
-{
-	parametro() (<tPCOMA> parametro())*
-}
-
-void parametro():
-{
-	
-}
-{
-	ref = <tREF> tipo = tipos() name = <tID> (<tCOPEN> dim = expr(a) <tCCLOSE>)? masParametros();
+	<tPOPEN> (parametros = list_params())? <tPCLOSE>
 	{
+		return parametros;
+	}
+}
+//Función que junta todos los parametros de una declaración y los devuelve en una lista.
+ArrayList<Symbol> list_params():
+{
+	ArrayList<Symbol> primer_parametro =null;
+	ArrayList<Symbol> resto_parametros = null;
+}
+{
+	primer_parametro = parametro() (<tPCOMA>  resto_parametros = parametro())*
+	{
+		primer_parametro.addAll(resto_parametros);
+		return primer_parametro;
+	}
+}
+
+
+
+
+
+
+// Funcion que devuelve una lista de simbolos que corresponden a una parte de los parametros de 
+// un método. Esta función devuelve un único parámetro
+// o junta varios parametros declarados del tipo ref/val i,j,k...
+ArrayList<Symbol> parametro():
+{
+	ArrayList<Symbol> lista_parametros = null;
+	Attributes a = null;
+
+	ArrayList<Symbol> resto_parametros = null;
+
+	Token nombre = null;
+	Attributes dim = null;
+	Symbol s = null;
+	Symbol.Types tipo;
+}
+{
+	<tREF> tipo = tipos() nombre = <tID> (<tCOPEN> dim = expr(a) <tCCLOSE>)? 
+	{
+		//Creo la lista con el parametro y el resto de parametros en caso de que haya mas parametros
+
+		//Para ello primero creo el simbolo del parametro. IGUAL QUE DEFINICION DE VARIABLES
+		
+		s = crearParametro(nombre,dim,tipo,true,false);
+		lista_parametros.add(s); // se añade el parametro
+
 
 	}
+	resto_parametros = masParametros(tipo,true)
+	{
+		lista_parametros.addAll(resto_parametros);
+		return lista_parametros;
+	}
 
-|	<tVAL> tipos() <tID> (<tCOPEN> expr(a) <tCCLOSE>)? masParametros();
+|	<tVAL> tipo = tipos() nombre = <tID> (<tCOPEN> dim = expr(a) <tCCLOSE>)? 
+	{
+		s = crearParametro(nombre,dim,tipo,false,false);
+		lista_parametros.add(s); // se añade el parametro
+	}
+
+
+	resto_parametros = masParametros(tipo,false)
+	{
+		lista_parametros.addAll(resto_parametros);
+		return lista_parametros;
+	}
 }
 
 
-void masParametros() :
+ArrayList<Symbol> masParametros(Symbol.Types tipo, boolean ref) :
 {
-
+	ArrayList<Symbol> resto_parametros = null;
+	Token nombre = null;
+	Attributes dim = null;
+	Attributes a = null;
+	Symbol s = null;
 }
 {
-	(<tCOMA> <tID> (<tCOPEN> expr(a) <tCCLOSE>)?)*
+	(<tCOMA> nombre = <tID> (<tCOPEN> dim = expr(a) <tCCLOSE>)?)*
+	{
+		// Crea un (o varios) parametro tanto por referencia como por valor( según se le haya pasado), y 
+		// lo devuelve en una lista.
+		s = crearParametro(nombre,dim,tipo,ref,false);
+		resto_parametros.add(s); // se añade el parametro
+		return resto_parametros;
+
+	}
 }
 
 
