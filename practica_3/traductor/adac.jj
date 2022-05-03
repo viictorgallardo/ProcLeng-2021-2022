@@ -31,6 +31,7 @@ import lib.symbolTable.exceptions.AlreadyDefinedSymbolException;
 import lib.symbolTable.exceptions.SymbolNotFoundException;
 import lib.symbolTable.exceptions.TypeErrorException;
 import lib.symbolTable.exceptions.IndexOOBException;
+import java.util.ArrayList;
 
 public class adac {
 	static SymbolTable tabla = new SymbolTable();
@@ -491,12 +492,43 @@ Symbol.Types tipos():
 	}
 }
 
-void inst_invocacion() :
+Attributes inst_invocacion() :
 {
-
+	Token t1;
+	ArrayList<Attributes> params = new ArrayList<Attributes>();
 }
 {
-	<tID> <tPOPEN> (list_expr())? <tPCLOSE>
+	t1=<tID> <tPOPEN> (params=list_expr())? <tPCLOSE>
+	{
+		System.out.println("Invocacion con: ");
+		for (Attributes a : params) {
+			System.out.print("    "+a.toString());
+	 	}
+		System.out.println();
+
+		//Obtener simbolo
+		try {
+			Symbol v = tabla.getSymbol(t1.image);
+			//Comprobar que el simbolo es una funcion
+			if (v.type == Symbol.Types.FUNCTION) {
+				SymbolFunction f = ((SymbolFunction)v);
+				//TODO: Comprobar que params son los parametros correctos
+				return new Attributes(f.returnType,Symbol.ParameterClass.NONE);
+			}
+			else if (v.type == Symbol.Types.PROCEDURE) {
+				SymbolProcedure f = ((SymbolProcedure)v);
+				//TODO: Comprobar que params son los parametros correctos
+				return new Attributes(Symbol.Types.UNDEFINED,Symbol.ParameterClass.NONE);
+			}
+			else {
+				errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.FUNCTION, Symbol.Types.PROCEDURE);
+				return new Attributes();
+			}
+		}
+		catch(SymbolNotFoundException e) {
+			errorSem.deteccion(e, t1);
+		}
+	}
 }
 
 void list_asignables() :
@@ -507,12 +539,36 @@ void list_asignables() :
 	asignable() (<tCOMA> asignable())*
 }
 
-void list_expr() :
+ArrayList<Attributes> list_expr() :
 {
 	Attributes a = new Attributes();
+	Attributes a1;
+	ArrayList<Attributes> other;
 }
 {
-	expr(a) (<tCOMA> expr(a))*
+	a1=expr(a) other=list_expr_plus()
+	{
+		other.add(0, a1);
+		return other;
+	}
+}
+
+ArrayList<Attributes> list_expr_plus() :
+{
+	Attributes a = new Attributes();
+	Attributes a1;
+	ArrayList<Attributes> other;
+}
+{
+	<tCOMA> a1=expr(a) other=list_expr_plus()
+	{
+		other.add(0, a1);
+		return other;
+	}
+|	
+	{
+		return new ArrayList<Attributes>();
+	}
 }
 
 //ASIGNACIONES
@@ -855,9 +911,10 @@ Attributes factor() :
 		System.out.println(output.toString());
 		return output;
 	}
-|	LOOKAHEAD(2)  inst_invocacion()
+|	LOOKAHEAD(2)  output=inst_invocacion()
 	{
-		//TODO
+		System.out.println(output.toString());
+		return output;
 	}
 |	t1=<tID>
 	{
