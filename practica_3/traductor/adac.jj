@@ -592,10 +592,10 @@ ArrayList<Symbol> list_params():
 // o junta varios parametros declarados del tipo ref/val i,j,k...
 ArrayList<Symbol> parametro():
 {
-	ArrayList<Symbol> lista_parametros = null;
+	ArrayList<Symbol> lista_parametros = new ArrayList<Symbol>();
 	Attributes a = null;
 
-	ArrayList<Symbol> resto_parametros = null;
+	ArrayList<Symbol> resto_parametros = new ArrayList<Symbol>();
 
 	Token nombre = null;
 	Attributes dim = null;
@@ -609,6 +609,7 @@ ArrayList<Symbol> parametro():
 
 		//Para ello primero creo el simbolo del parametro. IGUAL QUE DEFINICION DE VARIABLES
 		
+		System.out.println("NO ES AQUI");
 		s = crearParametro(nombre,dim,tipo,true,false);
 		lista_parametros.add(s); // se añade el parametro
 
@@ -637,7 +638,7 @@ ArrayList<Symbol> parametro():
 
 ArrayList<Symbol> masParametros(Symbol.Types tipo, boolean ref) :
 {
-	ArrayList<Symbol> resto_parametros = null;
+	ArrayList<Symbol> resto_parametros = new ArrayList<Symbol>();
 	Token nombre = null;
 	Attributes dim = null;
 	Attributes a = null;
