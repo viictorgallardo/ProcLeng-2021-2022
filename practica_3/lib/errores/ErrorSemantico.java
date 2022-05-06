@@ -54,6 +54,14 @@ public class ErrorSemantico {
 		System.err.println(sep);
 	}
 
+	public static void deteccion(InvocationException e, Token t, String m) {
+		contadorErrores++;
+		System.err.println(sep);
+		System.err.println("ERROR SEMÁNTICO (" + t.beginLine + "," + t.beginColumn + "): " +
+				"Invocación de la función '" + t.image + "' fallo: "+m);
+		System.err.println(sep);
+	}
+
 	// public static void deteccion(ActionInvocationException e, String mensaje, Token t) {
 	// 	contadorErrores++;
 	// 	System.err.println(sep);

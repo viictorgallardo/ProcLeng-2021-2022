@@ -1,16 +1,17 @@
-function integer test (val integer A) is
-boolean x;
+function integer test (ref character a; val integer B; ref boolean C) is
+function character lacasta (ref integer x; val boolean g) is
 begin
 
 end
-
+boolean x;
+integer i,vec[10];
 begin
     i := 5;
     i := 7;
    
     vec[3] := 5;
     vec[4] := 6;
-    a := 'b';
+    a := lacasta(i,C);
     a := 'a';
 end
 
