@@ -530,10 +530,17 @@ void inst_escribir_linea():
 void inst_seleccion():
 {
 	Attributes a = new Attributes();
+	Attributes condition = new Attributes();
+	Token cond ;
+
 }
 {
 	try {
-		<tIF> expr(a) <tTHEN> (instruccion())* masIf() <tEND>
+		cond = <tIF> condition = expr(a) <tTHEN> (instruccion())* masIf() <tEND>{
+			if(condition.type != Symbol.Types.BOOL){
+				errorSem.deteccion(new TypeErrorException(),cond);
+			}
+		}
 	}
 	catch(ParseException e) {
 		System.out.println(e.toString());
@@ -1173,10 +1180,17 @@ Attributes factor() :
 void inst_while() :
 {
 	Attributes a = new Attributes();
+	Attributes condition = new Attributes();
+	Token buc;
 }
 {
 	try {
-		<tWHILE> expr(a) <tDO> (instruccion())* <tEND>
+		buc = <tWHILE> condition = expr(a) <tDO> (instruccion())* <tEND>
+		{
+			if(condition.type != Symbol.Types.BOOL){
+				errorSem.deteccion(new TypeErrorException(),buc);
+			}
+		}
 	}
 	catch(ParseException e) {
 		System.out.println(e.toString());
