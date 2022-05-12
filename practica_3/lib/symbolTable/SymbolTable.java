@@ -26,6 +26,7 @@ public class SymbolTable {
 	private final int ST_SIZE = 16; //hasta 16 niveles
     private final int HASH_SIZE = 1024; //buckets
     private ArrayList<HashMap<String, Symbol>> st;
+    private Stack<Symbol> tr;
     private Set<String> reservedWords;
 
     public int level; //nivel actual
@@ -54,6 +55,23 @@ public class SymbolTable {
     public void removeBlock() {
         st.remove(st.size()-1);
         level--;
+    }
+
+    //apila un nuevo bloque
+    public void insertStack(Symbol s) {
+        tr.push(s);
+    }
+
+    //elimina un bloque
+    public Symbol peekStack() {
+        
+        return tr.peek();
+    }
+
+    //elimina un bloque
+    public Symbol removeStack() {
+        
+        return tr.pop();
     }
 
     //inserta las palabras reservadas, sustituyendo el anterior contenido
