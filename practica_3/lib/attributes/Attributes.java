@@ -9,10 +9,6 @@
 
 package lib.attributes;
 import lib.symbolTable.*;
-import lib.symbolTable.Symbol.Types;
-
-import java.util.ArrayList;
-import java.util.AbstractMap.SimpleEntry;
 
 public class Attributes implements Cloneable {
     public Symbol.Types type;
