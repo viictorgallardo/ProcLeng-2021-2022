@@ -11,10 +11,14 @@ begin
    if ( i = 5) then
     i := 7;
     end
-    if (i=7) then
+    if (i <> 7) then
         i:= 3;
     else
         i:= 5;
+    end
+
+    while i <= 0 do
+	i := i-1;
     end
     vec[3] := 5;
     vec[4] := 6;
