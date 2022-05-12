@@ -32,6 +32,7 @@ import lib.symbolTable.exceptions.SymbolNotFoundException;
 import lib.symbolTable.exceptions.InvocationException;
 import lib.symbolTable.exceptions.TypeErrorException;
 import lib.symbolTable.exceptions.IndexOOBException;
+import lib.symbolTable.exceptions.ContextException;
 import java.util.ArrayList;
 
 public class adac {
@@ -436,9 +437,14 @@ void inst_return() :
 {
 	temp=<tRETURN> a1=expr(a)
 	{
-		Symbol d = tabla.peekStack();
-		if(a1.type != d.type) {
-			errorSem.deteccion(new TypeErrorException(), temp, d.type);	
+		SymbolFunction d = tabla.peekStack();
+		if(d == null) {
+			errorSem.deteccion(new ContextException(), temp);
+		}
+		else {
+			if(a1.type != d.returnType) {
+				errorSem.deteccion(new TypeErrorException(), temp, d.returnType);	
+			}
 		}
 	}
 }
@@ -501,6 +507,7 @@ void inst_declaracion_proc():
 			SymbolProcedure s = new SymbolProcedure(nombre.image, argums); //TODO numero de parametros
 			s.constant = true;
 			tabla.insertSymbol(s);
+			tabla.insertStack(null);
 			tabla.insertBlock();
 			if(argums.size() != 0){
 				for(int i =0; i< argums.size(); i++){
@@ -517,6 +524,7 @@ void inst_declaracion_proc():
 	<tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
 	{
 		tabla.removeBlock();
+		tabla.removeStack();
 	}
 }
 

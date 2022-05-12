@@ -26,13 +26,14 @@ public class SymbolTable {
 	private final int ST_SIZE = 16; //hasta 16 niveles
     private final int HASH_SIZE = 1024; //buckets
     private ArrayList<HashMap<String, Symbol>> st;
-    private Stack<Symbol> tr;
+    private Stack<SymbolFunction> tr;
     private Set<String> reservedWords;
 
     public int level; //nivel actual
 
     public SymbolTable() {
         st = new ArrayList<HashMap<String, Symbol>>(ST_SIZE);
+        tr = new Stack<>();
         level = -1; //aún no hay ningún bloque intoducido
         insertBlock();
         reservedWords = new HashSet<String> ();
@@ -40,6 +41,7 @@ public class SymbolTable {
 
     public SymbolTable(String[] pals) {
     	st = new ArrayList<HashMap<String, Symbol>>(ST_SIZE);
+        tr = new Stack<>();
         level = -1; //aún no hay ningún bloque introducido
         insertBlock();
         reservedWords = new HashSet<String>(Arrays.asList(pals));
@@ -58,18 +60,18 @@ public class SymbolTable {
     }
 
     //apila un nuevo bloque
-    public void insertStack(Symbol s) {
+    public void insertStack(SymbolFunction s) {
         tr.push(s);
     }
 
     //elimina un bloque
-    public Symbol peekStack() {
+    public SymbolFunction peekStack() {
         
         return tr.peek();
     }
 
     //elimina un bloque
-    public Symbol removeStack() {
+    public SymbolFunction removeStack() {
         
         return tr.pop();
     }

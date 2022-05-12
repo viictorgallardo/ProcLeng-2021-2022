@@ -62,6 +62,15 @@ public class ErrorSemantico {
 		System.err.println(sep);
 	}
 
+
+	public static void deteccion(ContextException e, Token t) {
+		contadorErrores++;
+		System.err.println(sep);
+		System.err.println("ERROR SEMÁNTICO (" + t.beginLine + "," + t.beginColumn + "): " +
+				"Token '" + t.image + "' en contexto no valido.");
+		System.err.println(sep);
+	}
+
 	// public static void deteccion(ActionInvocationException e, String mensaje, Token t) {
 	// 	contadorErrores++;
 	// 	System.err.println(sep);
