@@ -1,38 +1,12 @@
 function integer test (ref character a; val integer B; ref boolean C) is
-    function character x (ref integer x; val boolean g) is
-        function character y(ref integer x) is
-        begin
-            return 'a';
-        end
+    procedure lacasta(ref character x; val boolean p) is
     begin
-        return x;
     end
     boolean y;
+    character u;
     integer i,j,vec[10];
 begin
-    get(i);
-    put(i);
-    put_line();
-    put_line(i,j,y);
-    i := 5;
-    i := 7;
-   if ( i = 5) then
-    i := 7;
-    end
-    if (i <> 7) then
-        i:= 3;
-    else
-        i:= 5;
-    end
-
-    while i <= 0 do
-	i := i-1;
-    end
-    vec[3] := 5;
-    vec[4] := 6;
-    a := x(i,C);
-    a := 'a';
-    return 1;
+    lacasta(u,y);
 end
 
 

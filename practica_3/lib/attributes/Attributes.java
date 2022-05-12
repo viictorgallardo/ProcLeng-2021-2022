@@ -18,6 +18,8 @@ public class Attributes implements Cloneable {
     public boolean valBool;
     public char valChar;
     public String valString;
+    public Symbol.Types baseType;
+    public int tam;
     public boolean isConstant;
 
     public Attributes(int value) {
@@ -27,10 +29,31 @@ public class Attributes implements Cloneable {
         this.isConstant = true;
     }
 
+    public Attributes(int value, Symbol.ParameterClass parClass) {
+        this.valInt = value;
+        this.type = Symbol.Types.INT;
+        this.parClass = parClass;
+        this.isConstant = true;
+    }
+
     public Attributes(boolean value) {
         this.valBool = value;
         this.type = Symbol.Types.BOOL;
         this.parClass = Symbol.ParameterClass.NONE;
+        this.isConstant = true;
+    }
+
+    public Attributes(boolean value, Symbol.ParameterClass parClass) {
+        this.valBool = value;
+        this.type = Symbol.Types.BOOL;
+        this.parClass = parClass;
+        this.isConstant = true;
+    }
+
+    public Attributes(char value, Symbol.ParameterClass parClass) {
+        this.valChar = value;
+        this.type = Symbol.Types.CHAR;
+        this.parClass = parClass;
         this.isConstant = true;
     }
 
@@ -46,6 +69,14 @@ public class Attributes implements Cloneable {
         this.type = Symbol.Types.STRING;
         this.parClass = Symbol.ParameterClass.NONE;
         this.isConstant = true;
+    }
+
+    public Attributes(Symbol.Types tipo, int tamaño) {
+        this.type = Symbol.Types.ARRAY;
+        this.baseType = tipo;
+        this.tam = tamaño;
+        this.parClass = Symbol.ParameterClass.REF;
+        this.isConstant = false;
     }
 
     public Attributes(Symbol.Types tipo, Symbol.ParameterClass parameterClass) {

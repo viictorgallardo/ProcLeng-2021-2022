@@ -747,8 +747,21 @@ Attributes inst_invocacion() :
 				}
 				else {
 					for (int i = 0; i<params.size(); i++) {
+						System.err.println("COMPROBANDO "+f.parList.get(i).parClass+" con "+params.get(i).parClass);
 						if(params.get(i).type != f.parList.get(i).type) {
 							errorSem.deteccion(new TypeErrorException(), temp, f.parList.get(i).type);
+						}
+						if(params.get(i).type==Symbol.Types.ARRAY && f.parList.get(i).type==Symbol.Types.ARRAY) {
+							if ((params.get(i).tam != ((SymbolArray)f.parList.get(i)).maxInd-((SymbolArray)f.parList.get(i)).minInd)) {
+								errorSem.deteccion(new InvocationException(), t1, "El vector no tiene el tamaño correcto");
+							}
+							if(params.get(i).baseType != ((SymbolArray)f.parList.get(i)).baseType) {
+								errorSem.deteccion(new InvocationException(), t1, "El vector no tiene el mismo tipo");
+							}
+						}
+						// Si el parametro declarado es por ref y el segundo no es asignable, salta error.
+						if((f.parList.get(i).parClass == Symbol.ParameterClass.REF) && (params.get(i).parClass!=Symbol.ParameterClass.REF)) {
+							errorSem.deteccion(new InvocationException(), t1, "La clase del parametro es incorrecta");
 						}
 					}
 				}
@@ -763,6 +776,18 @@ Attributes inst_invocacion() :
 					for (int i = 0; i<params.size(); i++) {
 						if(params.get(i).type != f.parList.get(i).type) {
 							errorSem.deteccion(new TypeErrorException(), temp, f.parList.get(i).type);
+						}
+						if(params.get(i).type==Symbol.Types.ARRAY && f.parList.get(i).type==Symbol.Types.ARRAY) {
+							if ((params.get(i).tam != ((SymbolArray)f.parList.get(i)).maxInd-((SymbolArray)f.parList.get(i)).minInd)) {
+								errorSem.deteccion(new InvocationException(), t1, "El vector no tiene el tamaño correcto");
+							}
+							if(params.get(i).baseType != ((SymbolArray)f.parList.get(i)).baseType) {
+								errorSem.deteccion(new InvocationException(), t1, "El vector no tiene el mismo tipo");
+							}
+						}
+						// Si el parametro declarado es por ref y el segundo no es asignable, salta error.
+						if((f.parList.get(i).parClass == Symbol.ParameterClass.REF) && (params.get(i).parClass!=Symbol.ParameterClass.REF)) {
+							errorSem.deteccion(new InvocationException(), t1, "La clase del parametro es incorrecta");
 						}
 					}
 				}
@@ -1159,7 +1184,7 @@ Attributes factor() :
 						errorSem.deteccion(new IndexOOBException(), t1, data.valInt);
 					}
 				}
-				output = new Attributes(((SymbolArray)v).baseType,((SymbolArray)v).parClass);
+				output = new Attributes(((SymbolArray)v).baseType, Symbol.ParameterClass.REF);
 			}
 			
 			return output;
@@ -1181,25 +1206,26 @@ Attributes factor() :
 	}
 |	LOOKAHEAD(2)  output=inst_invocacion()
 	{
-		
 		return output;
 	}
 |	t1=<tID>
 	{
 		try {
-			//TODO: como decir que sabemos el valor de la variable?
 			Symbol v = tabla.getSymbol(t1.image);
 			if (v.type!=Symbol.Types.INT && v.type!=Symbol.Types.CHAR && v.type!=Symbol.Types.BOOL) {
 				errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.INT, Symbol.Types.CHAR, Symbol.Types.BOOL);
 			}
 			if (v.type == Symbol.Types.INT) {
-				output = new Attributes(((SymbolInt)v).value);
+				output = new Attributes(((SymbolInt)v).value, Symbol.ParameterClass.REF);
 			}
 			else if (v.type == Symbol.Types.CHAR) {
-				output = new Attributes(((SymbolChar)v).value);
+				output = new Attributes(((SymbolChar)v).value, Symbol.ParameterClass.REF);
 			}
 			else if (v.type == Symbol.Types.BOOL) {
-				output = new Attributes(((SymbolBool)v).value);
+				output = new Attributes(((SymbolBool)v).value, Symbol.ParameterClass.REF);
+			}
+			else if (v.type == Symbol.Types.ARRAY) {
+				output = new Attributes(((SymbolArray)v).baseType, ((SymbolArray)v).maxInd-((SymbolArray)v).minInd);
 			}
 			else {
 				output = new Attributes();
