@@ -24,11 +24,6 @@ public class SymbolBool extends Symbol implements Cloneable {
         super(_name, Types.BOOL, _class); 
     	value = _value;
     }
-    //Booleano "desnudo"
-    public SymbolBool(boolean _value) {
-        super("", Types.BOOL, ParameterClass.NONE, true); 
-        value = _value;
-    }
 
     public String toString() {
         return "(" + name + "," + type + "," + value + "," + parClass + "," + nivel + ")";

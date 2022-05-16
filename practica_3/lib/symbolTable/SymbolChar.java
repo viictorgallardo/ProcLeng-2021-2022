@@ -24,11 +24,6 @@ public class SymbolChar extends Symbol implements Cloneable {
     	super(_name, Types.CHAR, _class);
         value = _value;
     }
-    //Char "desnudo"
-    public SymbolChar(char _value) {
-    	super("", Types.CHAR, ParameterClass.NONE, true); //TODO: Autogenerar un nombre?
-        value = _value;
-    }
 
     public String toString() {
         return "(" + name + "," + type + "," + value + "," + parClass + "," + nivel + ")";

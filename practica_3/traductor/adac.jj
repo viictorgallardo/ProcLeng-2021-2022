@@ -7,7 +7,7 @@
 //*****************************************************************
 
 options {
-  DEBUG_PARSER = true;
+  //DEBUG_PARSER = true;
 }
 
 
@@ -437,11 +437,14 @@ void inst_return() :
 {
 	temp=<tRETURN> a1=expr(a)
 	{
-		SymbolFunction d = tabla.peekStack();
-		if(d == null) {
+		Symbol r = tabla.peekStack();
+		SymbolFunction d;
+		if(r.type != Symbol.Types.FUNCTION) {
 			errorSem.deteccion(new ContextException(), temp);
+			return;
 		}
 		else {
+			d = ((SymbolFunction)r);
 			if(a1.type != d.returnType) {
 				errorSem.deteccion(new TypeErrorException(), temp, d.returnType);	
 			}
@@ -507,8 +510,8 @@ void inst_declaracion_proc():
 			SymbolProcedure s = new SymbolProcedure(nombre.image, argums); //TODO numero de parametros
 			s.constant = true;
 			tabla.insertSymbol(s);
-			tabla.insertStack(null);
 			tabla.insertBlock();
+			tabla.insertStack(s);
 			if(argums.size() != 0){
 				for(int i =0; i< argums.size(); i++){
 					parametro = argums.get(i);
@@ -564,7 +567,7 @@ void inst_seleccion():
 	try {
 		cond = <tIF> condition = expr(a) <tTHEN> (instruccion())* masIf() <tEND>{
 			if(condition.type != Symbol.Types.BOOL){
-				errorSem.deteccion(new TypeErrorException(),cond);
+				errorSem.deteccion(new TypeErrorException(),cond,Symbol.Types.BOOL);
 			}
 		}
 	}
@@ -742,12 +745,16 @@ Attributes inst_invocacion() :
 			//Comprobar que el simbolo es una funcion
 			if (v.type == Symbol.Types.FUNCTION) {
 				SymbolFunction f = ((SymbolFunction)v);
+				Symbol mainProg = tabla.getLastStack();
+				if ((mainProg.type==Symbol.Types.FUNCTION) && (((SymbolFunction)mainProg)==f)) {
+					errorSem.deteccion(new ContextException(),t1);
+					return new Attributes(f.returnType,Symbol.ParameterClass.NONE);
+				}
 				if(params.size()!=f.parList.size()) {
 					errorSem.deteccion(new InvocationException(), t1, "Nº de parametros incorrecto");
 				}
 				else {
 					for (int i = 0; i<params.size(); i++) {
-						System.err.println("COMPROBANDO "+f.parList.get(i).parClass+" con "+params.get(i).parClass);
 						if(params.get(i).type != f.parList.get(i).type) {
 							errorSem.deteccion(new TypeErrorException(), temp, f.parList.get(i).type);
 						}
@@ -769,6 +776,11 @@ Attributes inst_invocacion() :
 			}
 			else if (v.type == Symbol.Types.PROCEDURE) {
 				SymbolProcedure f = ((SymbolProcedure)v);
+				Symbol mainProg = tabla.getLastStack();
+				if ((mainProg.type==Symbol.Types.PROCEDURE) && (((SymbolProcedure)mainProg)==f)) {
+					errorSem.deteccion(new ContextException(),t1);
+					return new Attributes(Symbol.Types.UNDEFINED,Symbol.ParameterClass.NONE);
+				}
 				if(params.size()!=f.parList.size()) {
 					errorSem.deteccion(new InvocationException(), t1, "Nº de parametros incorrecto");
 				}
@@ -931,7 +943,13 @@ Symbol asignable() :
 				if(expr.valInt < ((SymbolArray)output).minInd || expr.valInt >= ((SymbolArray)output).maxInd){
 					errorSem.deteccion(new IndexOOBException(),nombre, expr.valInt);
 				}
-			}	
+			}
+			if(((SymbolArray)output).baseType == Symbol.Types.INT) {
+				output = new SymbolInt("");
+			}
+			else if(((SymbolArray)output).baseType == Symbol.Types.CHAR) {
+				output = new SymbolChar("");
+			}
 		}catch(SymbolNotFoundException e){
 			errorSem.deteccion(e,nombre);	
 		}
@@ -976,7 +994,7 @@ Attributes expr_plus(Attributes prev) :
 				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
 			}
 			//Calculo
-			mid = new Attributes(prev.valInt + a1.valInt);
+			mid = new Attributes(prev.valInt);
 		}
 		else if(op.kind==tRESTA) {
 			//Los dos tienen que ser enteros
@@ -984,7 +1002,7 @@ Attributes expr_plus(Attributes prev) :
 				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
 			}
 			//Calculo
-			mid = new Attributes(prev.valInt - a1.valInt);
+			mid = new Attributes(prev.valInt);
 		}
 		else if(op.kind==tMUL) {
 			//Los dos tienen que ser enteros
@@ -992,7 +1010,7 @@ Attributes expr_plus(Attributes prev) :
 				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
 			}
 			//Calculo
-			mid = new Attributes(prev.valInt * a1.valInt);
+			mid = new Attributes(prev.valInt);
 		}
 		else if(op.kind==tDIV) {
 			//Los dos tienen que ser enteros
@@ -1000,7 +1018,7 @@ Attributes expr_plus(Attributes prev) :
 				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
 			}
 			//Calculo
-			mid = new Attributes(prev.valInt / a1.valInt);
+			mid = new Attributes(prev.valInt);
 		}
 		else if(op.kind==tOR) {
 			//Los dos tienen que ser booleanos
@@ -1008,7 +1026,7 @@ Attributes expr_plus(Attributes prev) :
 				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
 			}
 			//Calculo
-			mid = new Attributes(prev.valBool || a1.valBool);
+			mid = new Attributes(true);
 		}
 		else if(op.kind==tAND) {
 			//Los dos tienen que ser booleanos
@@ -1016,7 +1034,7 @@ Attributes expr_plus(Attributes prev) :
 				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
 			}
 			//Calculo
-			mid = new Attributes(prev.valBool && a1.valBool);
+			mid = new Attributes(true);
 		}
 		else if(op.kind==tIGUAL) {
 			//Los dos tienen que ser enteros o chars
@@ -1025,13 +1043,13 @@ Attributes expr_plus(Attributes prev) :
 			}
 			//Calculo
 			if (prev.type==Symbol.Types.INT) { //Son los dos enteros
-				mid = new Attributes(prev.valInt == a1.valInt);
+				mid = new Attributes(true);
 			}
 			else if(prev.type == Symbol.Types.BOOL) { // Son los dos bools
-				mid = new Attributes(prev.valBool == a1.valBool);
+				mid = new Attributes(true);
 			}
 			else { //Son los dos chars
-				mid = new Attributes(prev.valChar == a1.valChar);
+				mid = new Attributes(true);
 			}
 		}
 		else if(op.kind==tMAYOR) {
@@ -1041,10 +1059,10 @@ Attributes expr_plus(Attributes prev) :
 			}
 			//Calculo
 			if (prev.type==Symbol.Types.INT) { //Son los dos enteros
-				mid = new Attributes(prev.valInt > a1.valInt);
+				mid = new Attributes(true);
 			}
 			else { //Son los dos chars
-				mid = new Attributes(prev.valChar > a1.valChar);
+				mid = new Attributes(true);
 			}
 		}
 		else if(op.kind==tMAYORI) {
@@ -1054,10 +1072,10 @@ Attributes expr_plus(Attributes prev) :
 			}
 			//Calculo
 			if (prev.type==Symbol.Types.INT) { //Son los dos enteros
-				mid = new Attributes(prev.valInt >= a1.valInt);
+				mid = new Attributes(true);
 			}
 			else { //Son los dos chars
-				mid = new Attributes(prev.valChar >= a1.valChar);
+				mid = new Attributes(true);
 			}
 		}
 		else if(op.kind==tMENOR) {
@@ -1067,10 +1085,10 @@ Attributes expr_plus(Attributes prev) :
 			}
 			//Calculo
 			if (prev.type==Symbol.Types.INT) { //Son los dos enteros
-				mid = new Attributes(prev.valInt < a1.valInt);
+				mid = new Attributes(true);
 			}
 			else { //Son los dos chars
-				mid = new Attributes(prev.valChar < a1.valChar);
+				mid = new Attributes(true);
 			}
 		}
 		else if(op.kind==tMENORI) {
@@ -1080,10 +1098,10 @@ Attributes expr_plus(Attributes prev) :
 			}
 			//Calculo
 			if (prev.type==Symbol.Types.INT) { //Son los dos enteros
-				mid = new Attributes(prev.valInt <= a1.valInt);
+				mid = new Attributes(true);
 			}
 			else { //Son los dos chars
-				mid = new Attributes(prev.valChar <= a1.valChar);
+				mid = new Attributes(true);
 			}
 		}
 		else if(op.kind==tDISTINTO) {
@@ -1093,13 +1111,13 @@ Attributes expr_plus(Attributes prev) :
 			}
 			//Calculo
 			if (prev.type==Symbol.Types.INT) { //Son los dos enteros
-				mid = new Attributes(prev.valInt != a1.valInt);
+				mid = new Attributes(true);
 			}
 			else if(prev.type == Symbol.Types.BOOL) { // Son los dos bools
-				mid = new Attributes(prev.valBool != a1.valBool);
+				mid = new Attributes(true);
 			}
 			else { //Son los dos chars
-				mid = new Attributes(prev.valChar != a1.valChar);
+				mid = new Attributes(true);
 			}
 		}
 		else if(op.kind==tMOD) {
@@ -1108,7 +1126,7 @@ Attributes expr_plus(Attributes prev) :
 				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
 			}
 			//Calculo
-			mid = new Attributes(prev.valInt % a1.valInt);
+			mid = new Attributes(prev.valInt);
 		}
 	}
 	a2=expr_plus(mid)
@@ -1266,7 +1284,8 @@ void inst_while() :
 		buc = <tWHILE> condition = expr(a) <tDO> (instruccion())* <tEND>
 		{
 			if(condition.type != Symbol.Types.BOOL){
-				errorSem.deteccion(new TypeErrorException(),buc);
+				System.err.println("Tipo que me llega: "+condition.type);
+				errorSem.deteccion(new TypeErrorException(),buc,Symbol.Types.BOOL);
 			}
 		}
 	}
