@@ -66,7 +66,6 @@ public class SymbolTable {
 
     //elimina un bloque
     public SymbolFunction peekStack() {
-        
         return tr.peek();
     }
 

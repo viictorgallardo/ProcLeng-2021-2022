@@ -7,7 +7,7 @@
 //*****************************************************************
 
 options {
-  //DEBUG_PARSER = true;
+  DEBUG_PARSER = true;
 }
 
 
@@ -496,7 +496,7 @@ void inst_declaracion_func() :
 void inst_declaracion_proc():
 {
 	Token nombre = null;
-	ArrayList<Symbol> argums = null;
+	ArrayList<Symbol> argums = new ArrayList<Symbol>();
 	Symbol parametro = null;
 
 }
