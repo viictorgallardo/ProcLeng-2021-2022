@@ -472,14 +472,13 @@ void inst_declaracion_func() :
 	<tFUNCTION> tipo = tipos() nombre = <tID> (argums = argumentos())?
 	{
 		try{
-			System.out.println("Entro a crear funcion");
 			SymbolFunction s = new SymbolFunction(nombre.image, argums,tipo); //TODO numero de parametros
 			s.constant = true;
 			tabla.insertSymbol(s);
 			tabla.insertBlock();
 			
 			tabla.insertStack(s);
-			System.out.println(tabla.toString());
+			
 		
 				
 			if(argums.size() != 0){
@@ -489,7 +488,6 @@ void inst_declaracion_func() :
 					
 				}
 			}
-			System.out.println("Llego hasta aquí");
 			s.toString();
 			
 		}catch(AlreadyDefinedSymbolException e){
@@ -498,6 +496,7 @@ void inst_declaracion_func() :
 	}
 	<tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
 	{
+		//System.out.println(tabla.toString());
 		tabla.removeBlock();
 		tabla.removeStack();
 	}
@@ -518,12 +517,10 @@ void inst_declaracion_proc():
 			s.constant = true;
 			tabla.insertSymbol(s);
 			tabla.insertBlock();
-			System.out.println(tabla.toString());
+			
 			tabla.insertStack(s);
-			if(argums.size() != 0){
-				
-				
-				for(int i =0; i< argums.size(); i++){
+			if(argums.size() != 0) {
+				for(int i=0; i< argums.size(); i++){
 					parametro = argums.get(i);
 					tabla.insertSymbol(parametro);
 				}
@@ -537,6 +534,7 @@ void inst_declaracion_proc():
 	}
 	<tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
 	{
+		//System.out.println(tabla.toString());
 		tabla.removeBlock();
 		tabla.removeStack();
 	}
@@ -987,7 +985,7 @@ Attributes expr(Attributes prev) :
 	Attributes a1,a2;
 }
 {
-  	a1=factor() a2=expr_plus(a1)
+	a1=factor_nivel1() a2=expr_plus(a1)
 	{
 		return a2;
 	}
@@ -1000,59 +998,9 @@ Attributes expr_plus(Attributes prev) :
 	Token op;
 }
 {
-	op=operador() a1=factor()
+	(op=<tMENOR> | op=<tMENORI> | op=<tDISTINTO> | op=<tIGUAL> | op=<tMAYOR> | op=<tMAYORI>) a1=factor_nivel1()
 	{
-		if(op.kind==tSUMA) {
-			//Los dos tienen que ser enteros
-			if (prev.type!=Symbol.Types.INT || a1.type!=Symbol.Types.INT) {
-				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
-			}
-			//Calculo
-			mid = new Attributes(prev.valInt);
-		}
-		else if(op.kind==tRESTA) {
-			//Los dos tienen que ser enteros
-			if (prev.type!=Symbol.Types.INT || a1.type!=Symbol.Types.INT) {
-				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
-			}
-			//Calculo
-			mid = new Attributes(prev.valInt);
-		}
-		else if(op.kind==tMUL) {
-			//Los dos tienen que ser enteros
-			if (prev.type!=Symbol.Types.INT || a1.type!=Symbol.Types.INT) {
-				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
-			}
-			//Calculo
-			mid = new Attributes(prev.valInt);
-		}
-		else if(op.kind==tDIV) {
-			//Los dos tienen que ser enteros
-			if (prev.type!=Symbol.Types.INT || a1.type!=Symbol.Types.INT) {
-				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
-			}
-			System.out.println("El tipo de dato es" + prev.type);
-			System.out.println("El tipo de operador 2 es " + a1.type);
-			//Calculo
-			mid = new Attributes(prev.valInt);
-		}
-		else if(op.kind==tOR) {
-			//Los dos tienen que ser booleanos
-			if (prev.type!=Symbol.Types.BOOL || a1.type!=Symbol.Types.BOOL) {
-				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
-			}
-			//Calculo
-			mid = new Attributes(true);
-		}
-		else if(op.kind==tAND) {
-			//Los dos tienen que ser booleanos
-			if (prev.type!=Symbol.Types.BOOL || a1.type!=Symbol.Types.BOOL) {
-				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
-			}
-			//Calculo
-			mid = new Attributes(true);
-		}
-		else if(op.kind==tIGUAL) {
+		if(op.kind==tIGUAL) {
 			//Los dos tienen que ser enteros o chars
 			if (!((prev.type == a1.type) && (prev.type==Symbol.Types.INT || prev.type==Symbol.Types.CHAR || prev.type==Symbol.Types.BOOL))) { 
 				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT,Symbol.Types.CHAR);
@@ -1136,14 +1084,6 @@ Attributes expr_plus(Attributes prev) :
 				mid = new Attributes(true);
 			}
 		}
-		else if(op.kind==tMOD) {
-			//Los dos tienen que ser enteros
-			if (prev.type!=Symbol.Types.INT || a1.type!=Symbol.Types.INT) {
-				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
-			}
-			//Calculo
-			mid = new Attributes(prev.valInt);
-		}
 	}
 	a2=expr_plus(mid)
 	{
@@ -1155,16 +1095,160 @@ Attributes expr_plus(Attributes prev) :
 	}
 }
 
-Token operador() :
+
+Attributes factor_nivel1() :
 {
-	Token output;
+	Attributes a = new Attributes();
+	Attributes a1,a2;
 }
 {
-	(output=<tSUMA> | output=<tRESTA> | output=<tMUL> | output=<tDIV> | output=<tOR> | output=<tAND> | output=<tIGUAL> | output=<tMAYOR> | output=<tMAYORI> | output=<tMENOR> | output=<tMENORI> | output=<tDISTINTO> | output=<tMOD>)
+	a1=factor_nivel2() a2=factor_nivel1_plus(a1)
 	{
-		return output;
+		return a2;
 	}
 }
+
+Attributes factor_nivel1_plus(Attributes prev) :
+{
+	Attributes a1, a2;
+	Attributes mid = new Attributes();
+	Token op;
+}
+{
+	(op=<tSUMA> | op=<tRESTA> | op=<tOR>) a1=factor_nivel2()
+	{
+		if(op.kind==tSUMA) {
+			//Los dos tienen que ser enteros
+			if (prev.type!=Symbol.Types.INT || a1.type!=Symbol.Types.INT) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+			}
+			//Calculo
+			mid = new Attributes(prev.valInt);
+		}
+		else if(op.kind==tRESTA) {
+			//Los dos tienen que ser enteros
+			if (prev.type!=Symbol.Types.INT || a1.type!=Symbol.Types.INT) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+			}
+			//Calculo
+			mid = new Attributes(prev.valInt);
+		}
+		else if(op.kind==tOR) {
+			//Los dos tienen que ser booleanos
+			if (prev.type!=Symbol.Types.BOOL || a1.type!=Symbol.Types.BOOL) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+			}
+			//Calculo
+			mid = new Attributes(true);
+		}	
+	}
+	a2=factor_nivel1_plus(mid)
+	{
+		return a2;
+	}
+|
+	{
+		return prev;
+	}
+}
+
+Attributes factor_nivel2() :
+{
+	Attributes a = new Attributes();
+	Attributes a1,a2;
+	Token op;
+}
+{
+	(op=<tSUMA> | op=<tRESTA>) a1=factor_nivel3()
+	{
+		if(op.kind==tSUMA) {
+			//Los dos tienen que ser enteros
+			if (a1.type!=Symbol.Types.INT) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+			}
+			//Calculo
+			a2 = new Attributes(a1.valInt);
+		}
+		else if(op.kind==tRESTA) {
+			//Los dos tienen que ser enteros
+			if (a1.type!=Symbol.Types.INT) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+			}
+			//Calculo
+			a2 = new Attributes(a1.valInt);
+		}
+		else { //Nunca entrara aqui
+			a2 = new Attributes();
+		}
+		return a2;
+	}
+}
+
+
+Attributes factor_nivel3() :
+{
+	Attributes a = new Attributes();
+	Attributes a1,a2;
+}
+{
+	a1=factor() a2=factor_nivel3_plus(a1)
+	{
+		return a2;
+	}
+}
+
+Attributes factor_nivel3_plus(Attributes prev) :
+{
+	Attributes a1, a2;
+	Attributes mid = new Attributes();
+	Token op;
+}
+{
+	(op=<tMUL> | op=<tDIV> | op=<tMOD> | op=<tAND>) a1=factor()
+	{
+		if(op.kind==tMUL) {
+			//Los dos tienen que ser enteros
+			if (prev.type!=Symbol.Types.INT || a1.type!=Symbol.Types.INT) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+			}
+			//Calculo
+			mid = new Attributes(prev.valInt);
+		}
+		else if(op.kind==tDIV) {
+			//Los dos tienen que ser enteros
+			if (prev.type!=Symbol.Types.INT || a1.type!=Symbol.Types.INT) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+			}
+			//Calculo
+			mid = new Attributes(prev.valInt);
+		}
+		else if(op.kind==tMOD) {
+			//Los dos tienen que ser enteros
+			if (prev.type!=Symbol.Types.INT || a1.type!=Symbol.Types.INT) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+			}
+			//Calculo
+			mid = new Attributes(prev.valInt);
+		}
+		else if(op.kind==tAND) {
+			//Los dos tienen que ser booleanos
+			if (prev.type!=Symbol.Types.BOOL || a1.type!=Symbol.Types.BOOL) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+			}
+			//Calculo
+			mid = new Attributes(true);
+		}
+	}
+	a2=factor_nivel3_plus(mid)
+	{
+		return a2;
+	}
+|
+	{
+		return prev;
+	}
+}
+
 
 Attributes factor() :
 {
@@ -1246,8 +1330,8 @@ Attributes factor() :
 	{
 		try {
 			Symbol v = tabla.getSymbol(t1.image);
-			if (v.type!=Symbol.Types.INT && v.type!=Symbol.Types.CHAR && v.type!=Symbol.Types.BOOL) {
-				errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.INT, Symbol.Types.CHAR, Symbol.Types.BOOL);
+			if (v.type!=Symbol.Types.INT && v.type!=Symbol.Types.CHAR && v.type!=Symbol.Types.BOOL && v.type!=Symbol.Types.ARRAY) {
+				errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.INT, Symbol.Types.CHAR, Symbol.Types.BOOL,Symbol.Types.ARRAY);
 			}
 			if (v.type == Symbol.Types.INT) {
 				output = new Attributes(((SymbolInt)v).value, Symbol.ParameterClass.REF);
@@ -1261,7 +1345,7 @@ Attributes factor() :
 			else if (v.type == Symbol.Types.ARRAY) {
 				output = new Attributes(((SymbolArray)v).baseType, ((SymbolArray)v).maxInd-((SymbolArray)v).minInd);
 			}
-			else {
+			else { //Nunca deberia entrar aqui
 				output = new Attributes();
 			}
 			return output;
