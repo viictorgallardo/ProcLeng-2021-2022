@@ -7,7 +7,7 @@
 //*****************************************************************
 
 options {
-  //DEBUG_PARSER = true;
+ //DEBUG_PARSER = true;
 }
 
 
@@ -472,19 +472,26 @@ void inst_declaracion_func() :
 	<tFUNCTION> tipo = tipos() nombre = <tID> (argums = argumentos())?
 	{
 		try{
+			System.out.println("Entro a crear funcion");
 			SymbolFunction s = new SymbolFunction(nombre.image, argums,tipo); //TODO numero de parametros
 			s.constant = true;
 			tabla.insertSymbol(s);
 			tabla.insertBlock();
+			
 			tabla.insertStack(s);
+			System.out.println(tabla.toString());
+		
+				
 			if(argums.size() != 0){
 				for(int i =0; i< argums.size(); i++){
 					parametro = argums.get(i);
 					tabla.insertSymbol(parametro);
+					
 				}
 			}
+			System.out.println("Llego hasta aquí");
 			s.toString();
-			tabla.toString();
+			
 		}catch(AlreadyDefinedSymbolException e){
 			errorSem.deteccion(e, nombre );
 		}
@@ -511,13 +518,17 @@ void inst_declaracion_proc():
 			s.constant = true;
 			tabla.insertSymbol(s);
 			tabla.insertBlock();
+			System.out.println(tabla.toString());
 			tabla.insertStack(s);
 			if(argums.size() != 0){
+				
+				
 				for(int i =0; i< argums.size(); i++){
 					parametro = argums.get(i);
 					tabla.insertSymbol(parametro);
 				}
 			}
+			
 			
 
 		}catch(AlreadyDefinedSymbolException e){
@@ -596,6 +607,7 @@ ArrayList<Symbol> argumentos() :
 {
 	<tPOPEN> (parametros = list_params())? <tPCLOSE>
 	{
+		//System.out.println(parametros.toString());
 		return parametros;
 	}
 }
@@ -685,18 +697,20 @@ ArrayList<Symbol> parametro():
 ArrayList<Symbol> masParametros(Symbol.Types tipo, boolean ref) :
 {
 	ArrayList<Symbol> resto_parametros = new ArrayList<Symbol>();
+	ArrayList<Symbol> otros_parametros = new ArrayList<Symbol>();
 	Token nombre = null;
 	Attributes dim = null;
 	Attributes a = null;
 	Symbol s = null;
 }
 {
-	<tCOMA> nombre = <tID> (<tCOPEN> dim = expr(a) <tCCLOSE>)? masParametros(tipo,ref)
+	<tCOMA> nombre = <tID> (<tCOPEN> dim = expr(a) <tCCLOSE>)? otros_parametros = masParametros(tipo,ref)
 	{
 		// Crea un (o varios) parametro tanto por referencia como por valor( según se le haya pasado), y 
 		// lo devuelve en una lista.
 		s = crearParametro(nombre,dim,tipo,ref,false);
 		resto_parametros.add(s); // se añade el parametro
+		resto_parametros.addAll(otros_parametros);
 		return resto_parametros;
 
 	}
@@ -1017,6 +1031,8 @@ Attributes expr_plus(Attributes prev) :
 			if (prev.type!=Symbol.Types.INT || a1.type!=Symbol.Types.INT) {
 				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
 			}
+			System.out.println("El tipo de dato es" + prev.type);
+			System.out.println("El tipo de operador 2 es " + a1.type);
 			//Calculo
 			mid = new Attributes(prev.valInt);
 		}
