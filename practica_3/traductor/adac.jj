@@ -667,7 +667,7 @@ ArrayList<Symbol> parametro():
 		//Para ello primero creo el simbolo del parametro. IGUAL QUE DEFINICION DE VARIABLES
 		
 		s = crearParametro(nombre,dim,tipo,true,false);
-		lista_parametros.add(s); // se añade el parametro
+		lista_parametros.add(s); // se anade el parametro
 
 
 	}
@@ -680,7 +680,7 @@ ArrayList<Symbol> parametro():
 |	<tVAL> tipo = tipos() nombre = <tID> (<tCOPEN> dim = expr(a) <tCCLOSE>)? 
 	{
 		s = crearParametro(nombre,dim,tipo,false,false);
-		lista_parametros.add(s); // se añade el parametro
+		lista_parametros.add(s); // se anade el parametro
 	}
 
 
@@ -707,7 +707,7 @@ ArrayList<Symbol> masParametros(Symbol.Types tipo, boolean ref) :
 		// Crea un (o varios) parametro tanto por referencia como por valor( según se le haya pasado), y 
 		// lo devuelve en una lista.
 		s = crearParametro(nombre,dim,tipo,ref,false);
-		resto_parametros.add(s); // se añade el parametro
+		resto_parametros.add(s); // se anade el parametro
 		resto_parametros.addAll(otros_parametros);
 		return resto_parametros;
 
@@ -772,7 +772,7 @@ Attributes inst_invocacion() :
 						}
 						if(params.get(i).type==Symbol.Types.ARRAY && f.parList.get(i).type==Symbol.Types.ARRAY) {
 							if ((params.get(i).tam != ((SymbolArray)f.parList.get(i)).maxInd-((SymbolArray)f.parList.get(i)).minInd)) {
-								errorSem.deteccion(new InvocationException(), t1, "El vector no tiene el tamaño correcto");
+								errorSem.deteccion(new InvocationException(), t1, "El vector no tiene el tamano correcto");
 							}
 							if(params.get(i).baseType != ((SymbolArray)f.parList.get(i)).baseType) {
 								errorSem.deteccion(new InvocationException(), t1, "El vector no tiene el mismo tipo");
@@ -803,7 +803,7 @@ Attributes inst_invocacion() :
 						}
 						if(params.get(i).type==Symbol.Types.ARRAY && f.parList.get(i).type==Symbol.Types.ARRAY) {
 							if ((params.get(i).tam != ((SymbolArray)f.parList.get(i)).maxInd-((SymbolArray)f.parList.get(i)).minInd)) {
-								errorSem.deteccion(new InvocationException(), t1, "El vector no tiene el tamaño correcto");
+								errorSem.deteccion(new InvocationException(), t1, "El vector no tiene el tamano correcto");
 							}
 							if(params.get(i).baseType != ((SymbolArray)f.parList.get(i)).baseType) {
 								errorSem.deteccion(new InvocationException(), t1, "El vector no tiene el mismo tipo");
