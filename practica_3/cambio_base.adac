@@ -6,6 +6,7 @@ procedure cambio_base is
 function integer b_dec(val integer n,b) is
 	integer uc;
 	integer valRec;
+	character a;
 begin
 	if n = 0 then
 		return 0;

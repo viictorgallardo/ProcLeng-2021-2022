@@ -952,7 +952,7 @@ Symbol asignable() :
 				errorSem.deteccion(new TypeErrorException(), nombre, Symbol.Types.INT);
 			}
 			else{
-				if(expr.valInt < ((SymbolArray)output).minInd || expr.valInt >= ((SymbolArray)output).maxInd){
+				if(expr.valInt < ((SymbolArray)output).minInd || expr.valInt > ((SymbolArray)output).maxInd){
 					errorSem.deteccion(new IndexOOBException(),nombre, expr.valInt);
 				}
 			}
@@ -1156,12 +1156,15 @@ Attributes factor_nivel2() :
 {
 	Attributes a = new Attributes();
 	Attributes a1,a2;
-	Token op;
+	Token op = null;
 }
 {
-	(op=<tSUMA> | op=<tRESTA>) a1=factor_nivel3()
+	(op=<tSUMA> | op=<tRESTA>)? a1=factor_nivel3()
 	{
-		if(op.kind==tSUMA) {
+		if(op == null) {	
+			a2 = a1;
+		}
+		else if(op.kind==tSUMA) {
 			//Los dos tienen que ser enteros
 			if (a1.type!=Symbol.Types.INT) {
 				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
@@ -1177,7 +1180,7 @@ Attributes factor_nivel2() :
 			//Calculo
 			a2 = new Attributes(a1.valInt);
 		}
-		else { //Nunca entrara aqui
+		else { //No deberia entrar nunca aqui
 			a2 = new Attributes();
 		}
 		return a2;
@@ -1298,7 +1301,7 @@ Attributes factor() :
 			else {
 				//Comprobar que el index es correcto
 				if(data.isConstant) {	//Si sabemos el valor...
-					if((data.valInt >= ((SymbolArray)v).maxInd) || (data.valInt < ((SymbolArray)v).minInd)) {
+					if((data.valInt > ((SymbolArray)v).maxInd) || (data.valInt < ((SymbolArray)v).minInd)) {
 						errorSem.deteccion(new IndexOOBException(), t1, data.valInt);
 					}
 				}
