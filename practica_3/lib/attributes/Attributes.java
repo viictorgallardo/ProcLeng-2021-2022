@@ -71,10 +71,10 @@ public class Attributes implements Cloneable {
         this.isConstant = true;
     }
 
-    public Attributes(Symbol.Types tipo, int tamaño) {
+    public Attributes(Symbol.Types tipo, int tamano) {
         this.type = Symbol.Types.ARRAY;
         this.baseType = tipo;
-        this.tam = tamaño;
+        this.tam = tamano;
         this.parClass = Symbol.ParameterClass.REF;
         this.isConstant = false;
     }
