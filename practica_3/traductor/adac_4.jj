@@ -1,5 +1,5 @@
 //*****************************************************************
-// File:   adac.jj
+// File:   adac_4.jj
 // Author: Marcos Garralaga (795936), Victor Gallardo (801159)
 // Date:   09/03/22
 // Coms:   Un tutorial sobre el análisis léxico con javacc
@@ -11,7 +11,7 @@ options {
 }
 
 
-PARSER_BEGIN(adac)
+PARSER_BEGIN(adac_4)
 package traductor;
 
 
@@ -35,7 +35,7 @@ import lib.symbolTable.exceptions.IndexOOBException;
 import lib.symbolTable.exceptions.ContextException;
 import java.util.ArrayList;
 
-public class adac {
+public class adac_4 {
 	static SymbolTable tabla = new SymbolTable();
 	static ErrorSemantico errorSem = new ErrorSemantico();
 
@@ -133,14 +133,14 @@ public class adac {
 	}
 
     public static void main(String[] args) {
-    	adac parser;
+    	adac_4 parser;
 
     	try {
 	    	if(args.length == 0) { //entrada desde stdin
-				parser = new adac(System.in);
+				parser = new adac_4(System.in);
 			}
 			else { //entrada desde fichero en args[0]
-	            parser = new adac(new java.io.FileInputStream(args[0])); 
+	            parser = new adac_4(new java.io.FileInputStream(args[0])); 
 			}
 			parser.S(); //invoca símbolo inicial de la gramática
 		}
@@ -156,7 +156,7 @@ public class adac {
     }
 
 }
-PARSER_END(adac)
+PARSER_END(adac_4)
 //------------ descripción del AL
 SKIP :
 {
