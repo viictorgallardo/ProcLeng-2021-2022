@@ -35,10 +35,12 @@ import lib.symbolTable.exceptions.IndexOOBException;
 import lib.symbolTable.exceptions.ContextException;
 import java.util.ArrayList;
 import lib.tools.codeGeneration.CodeBlock;
+import lib.tools.codeGeneration.CodeElement;
 import lib.tools.codeGeneration.PCodeInstruction.OpCode;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.StringBuilder;
 
 public class adac_4 {
 	static SymbolTable tabla = new SymbolTable();
@@ -568,21 +570,34 @@ void inst_escribir():
 {
 	<tPUT> temp=<tPOPEN> lista=list_expr() <tPCLOSE>
 	{
+		CodeBlock c = new CodeBlock();
 		for(Attributes a: lista) {
 			if(a.type!=Symbol.Types.INT && a.type!=Symbol.Types.BOOL && a.type!=Symbol.Types.CHAR && a.type!=Symbol.Types.STRING) {
 				errorSem.deteccion(new TypeErrorException(), temp, Symbol.Types.INT,Symbol.Types.BOOL,Symbol.Types.CHAR,Symbol.Types.STRING);
 			}
 			if(a.type == Symbol.Types.CHAR) {
 				a.code.addInst(OpCode.WRT,0);
+				// Se añade al bloque para escribirlo posteriormente
+				c.addBlock(a.code);
+			}
+			else if (a.type == Symbol.Types.STRING) {
+				for (CodeElement inst: a.code.code) {
+					c.code.add(inst);
+					c.addInst(OpCode.WRT,0);
+				}
 			}
 			else {
 				a.code.addInst(OpCode.WRT,1);
+				// Se añade al bloque para escribirlo posteriormente
+				c.addBlock(a.code);
 			}
-			try {
-				pcode.write(a.code.toString());
-			} catch (Exception e) {
-				System.err.println(e);
-			}
+			
+		}
+		c.encloseXMLTags("inst_put");
+		try {
+			pcode.write(c.toString());
+		} catch (Exception e) {
+			System.err.println(e);
 		}
 	}
 }
@@ -595,25 +610,31 @@ void inst_escribir_linea():
 {
 	<tPUTLINE> temp=<tPOPEN> (lista=list_expr())? <tPCLOSE>
 	{
+		CodeBlock c = new CodeBlock();
 		for(Attributes a: lista) {
 			if(a.type!=Symbol.Types.INT && a.type!=Symbol.Types.BOOL && a.type!=Symbol.Types.CHAR && a.type!=Symbol.Types.STRING) {
 				errorSem.deteccion(new TypeErrorException(), temp, Symbol.Types.INT,Symbol.Types.BOOL,Symbol.Types.CHAR,Symbol.Types.STRING);
 			}
 			if(a.type == Symbol.Types.CHAR) {
 				a.code.addInst(OpCode.WRT,0);
+				// Se añade al bloque para escribirlo posteriormente
+				c.addBlock(a.code);
+			}
+			else if (a.type == Symbol.Types.STRING) {
+				for (CodeElement inst: a.code.code) {
+					c.code.add(inst);
+					c.addInst(OpCode.WRT,0);
+				}
 			}
 			else {
 				a.code.addInst(OpCode.WRT,1);
-			}
-			try {
-				pcode.write(a.code.toString());
-			} catch (Exception e) {
-				System.err.println(e);
+				// Se añade al bloque para escribirlo posteriormente
+				c.addBlock(a.code);
 			}
 		}
-		CodeBlock c = new CodeBlock();
 		c.addInst(OpCode.STC,10);
 		c.addInst(OpCode.WRT,0);
+		c.encloseXMLTags("inst_put_line");
 		try {
 			pcode.write(c.toString());
 		} catch (Exception e) {
@@ -1370,18 +1391,28 @@ Attributes factor() :
 |	t1 = <tCAD>
 	{
 		output = new Attributes(t1.image);
+		for(int i = 1; i<t1.image.length()-1; i++) {
+			output.code.addInst(OpCode.STC,t1.image.charAt(i));
+		}
 		
 		return output;
 	}
 |	t1 = <tCH>
 	{
 		output = new Attributes(t1.image.charAt(1));
+		output.code.addInst(OpCode.STC,t1.image.charAt(1));
 		
 		return output;
 	}
 |	(t1=<tTRUE> | t1=<tFALSE>)
 	{
 		output = new Attributes(Boolean.parseBoolean(t1.image));
+		if(t1.image.equals("true")) {
+			output.code.addInst(OpCode.STC,1);
+		}
+		else {
+			output.code.addInst(OpCode.STC,0);
+		}
 		
 		return output;
 	}

@@ -1,10 +1,12 @@
-  STC  1
-  STC  2
-  PLUS
-  WRT  1
-  STC  2
-  WRT  1
-  STC  3
-  WRT  1
+<inst_put_line>
+  STC 104
+  WRT  0
+  STC 111
+  WRT  0
+  STC 108
+  WRT  0
+  STC 97
+  WRT  0
   STC 10
   WRT  0
+</inst_put_line>

@@ -19,9 +19,9 @@ public class CodeBlock {
 	
 	public enum BlockMode {PLAIN, XML};
 	// CAMBIAR A XML SI QUEREMOS QUE SE GENERE EN XML
-	public static BlockMode generationMode = BlockMode.PLAIN; 
+	public static BlockMode generationMode = BlockMode.XML; 
 	
-	ArrayList<CodeElement> code;
+	public ArrayList<CodeElement> code;
 	
 	public CodeBlock() {
 		code = new ArrayList<CodeElement>(); 

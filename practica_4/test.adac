@@ -1,4 +1,4 @@
 procedure qrEncode is
 begin
-    put_line(1+2,2,3);
+    put_line("hola");
 end
