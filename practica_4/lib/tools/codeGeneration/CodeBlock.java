@@ -18,7 +18,7 @@ import lib.tools.codeGeneration.PCodeInstruction.OpCode;
 public class CodeBlock {
 	
 	public enum BlockMode {PLAIN, XML};
-	
+	// CAMBIAR A XML SI QUEREMOS QUE SE GENERE EN XML
 	public static BlockMode generationMode = BlockMode.PLAIN; 
 	
 	ArrayList<CodeElement> code;

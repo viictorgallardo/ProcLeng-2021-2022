@@ -7,7 +7,7 @@
 //*****************************************************************
 
 options {
- //DEBUG_PARSER = true;
+//  DEBUG_PARSER = true;
 }
 
 
@@ -34,11 +34,17 @@ import lib.symbolTable.exceptions.TypeErrorException;
 import lib.symbolTable.exceptions.IndexOOBException;
 import lib.symbolTable.exceptions.ContextException;
 import java.util.ArrayList;
+import lib.tools.codeGeneration.CodeBlock;
+import lib.tools.codeGeneration.PCodeInstruction.OpCode;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class adac_4 {
 	static SymbolTable tabla = new SymbolTable();
 	static ErrorSemantico errorSem = new ErrorSemantico();
-
+	static File f;
+	static FileWriter pcode;
 	
 
 //FUNCION QUE CREA EL SIMBOLO CORRESPONDIENTE AL PARAMETRO DE UNA FUNCION.
@@ -135,14 +141,27 @@ public class adac_4 {
     public static void main(String[] args) {
     	adac_4 parser;
 
+
     	try {
 	    	if(args.length == 0) { //entrada desde stdin
 				parser = new adac_4(System.in);
 			}
 			else { //entrada desde fichero en args[0]
 	            parser = new adac_4(new java.io.FileInputStream(args[0])); 
+				f = new File(args[0].substring(0,args[0].lastIndexOf('.'))+".pcode");
+				try {
+					f.createNewFile();
+					pcode = new FileWriter(f);
+				} catch (Exception e) {
+					System.err.println(e);
+				}
 			}
 			parser.S(); //invoca símbolo inicial de la gramática
+			try {
+				pcode.close();
+			} catch (Exception e) {
+				System.err.println(e);
+			}
 		}
 		catch (java.io.FileNotFoundException e) {
 			System.err.println ("Fichero " + args[0] + " no encontrado.");
@@ -553,16 +572,54 @@ void inst_escribir():
 			if(a.type!=Symbol.Types.INT && a.type!=Symbol.Types.BOOL && a.type!=Symbol.Types.CHAR && a.type!=Symbol.Types.STRING) {
 				errorSem.deteccion(new TypeErrorException(), temp, Symbol.Types.INT,Symbol.Types.BOOL,Symbol.Types.CHAR,Symbol.Types.STRING);
 			}
+			if(a.type == Symbol.Types.CHAR) {
+				a.code.addInst(OpCode.WRT,0);
+			}
+			else {
+				a.code.addInst(OpCode.WRT,1);
+			}
+			try {
+				pcode.write(a.code.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
 		}
 	}
 }
 
 void inst_escribir_linea():
 {
-
+	ArrayList<Attributes> lista = new ArrayList<Attributes>();
+	Token temp;
 }
 {
-	<tPUTLINE> <tPOPEN> (list_expr())? <tPCLOSE>
+	<tPUTLINE> temp=<tPOPEN> (lista=list_expr())? <tPCLOSE>
+	{
+		for(Attributes a: lista) {
+			if(a.type!=Symbol.Types.INT && a.type!=Symbol.Types.BOOL && a.type!=Symbol.Types.CHAR && a.type!=Symbol.Types.STRING) {
+				errorSem.deteccion(new TypeErrorException(), temp, Symbol.Types.INT,Symbol.Types.BOOL,Symbol.Types.CHAR,Symbol.Types.STRING);
+			}
+			if(a.type == Symbol.Types.CHAR) {
+				a.code.addInst(OpCode.WRT,0);
+			}
+			else {
+				a.code.addInst(OpCode.WRT,1);
+			}
+			try {
+				pcode.write(a.code.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+		CodeBlock c = new CodeBlock();
+		c.addInst(OpCode.STC,10);
+		c.addInst(OpCode.WRT,0);
+		try {
+			pcode.write(c.toString());
+		} catch (Exception e) {
+			System.err.println(e);
+		}
+	}
 }
 
 void inst_seleccion():
@@ -1015,6 +1072,9 @@ Attributes expr_plus(Attributes prev) :
 			else { //Son los dos chars
 				mid = new Attributes(true);
 			}
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.EQ);
 		}
 		else if(op.kind==tMAYOR) {
 			//Los dos tienen que ser enteros o chars
@@ -1028,6 +1088,9 @@ Attributes expr_plus(Attributes prev) :
 			else { //Son los dos chars
 				mid = new Attributes(true);
 			}
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.GT);
 		}
 		else if(op.kind==tMAYORI) {
 			//Los dos tienen que ser enteros o chars
@@ -1041,6 +1104,9 @@ Attributes expr_plus(Attributes prev) :
 			else { //Son los dos chars
 				mid = new Attributes(true);
 			}
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.GTE);
 		}
 		else if(op.kind==tMENOR) {
 			//Los dos tienen que ser enteros o chars
@@ -1054,6 +1120,9 @@ Attributes expr_plus(Attributes prev) :
 			else { //Son los dos chars
 				mid = new Attributes(true);
 			}
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.LT);
 		}
 		else if(op.kind==tMENORI) {
 			//Los dos tienen que ser enteros o chars
@@ -1067,6 +1136,9 @@ Attributes expr_plus(Attributes prev) :
 			else { //Son los dos chars
 				mid = new Attributes(true);
 			}
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.LTE);
 		}
 		else if(op.kind==tDISTINTO) {
 			//Los dos tienen que ser enteros o chars
@@ -1083,6 +1155,9 @@ Attributes expr_plus(Attributes prev) :
 			else { //Son los dos chars
 				mid = new Attributes(true);
 			}
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.NEQ);
 		}
 	}
 	a2=expr_plus(mid)
@@ -1124,6 +1199,9 @@ Attributes factor_nivel1_plus(Attributes prev) :
 			}
 			//Calculo
 			mid = new Attributes(prev.valInt);
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.PLUS);
 		}
 		else if(op.kind==tRESTA) {
 			//Los dos tienen que ser enteros
@@ -1132,6 +1210,9 @@ Attributes factor_nivel1_plus(Attributes prev) :
 			}
 			//Calculo
 			mid = new Attributes(prev.valInt);
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.SBT);
 		}
 		else if(op.kind==tOR) {
 			//Los dos tienen que ser booleanos
@@ -1140,6 +1221,9 @@ Attributes factor_nivel1_plus(Attributes prev) :
 			}
 			//Calculo
 			mid = new Attributes(true);
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.OR);
 		}	
 	}
 	a2=factor_nivel1_plus(mid)
@@ -1171,6 +1255,7 @@ Attributes factor_nivel2() :
 			}
 			//Calculo
 			a2 = new Attributes(a1.valInt);
+			a2.code.addBlock(a1.code);
 		}
 		else if(op.kind==tRESTA) {
 			//Los dos tienen que ser enteros
@@ -1179,6 +1264,9 @@ Attributes factor_nivel2() :
 			}
 			//Calculo
 			a2 = new Attributes(a1.valInt);
+			a2.code.addBlock(a1.code);
+			a2.code.addInst(OpCode.NGI);
+
 		}
 		else { //No deberia entrar nunca aqui
 			a2 = new Attributes();
@@ -1214,8 +1302,11 @@ Attributes factor_nivel3_plus(Attributes prev) :
 			if (prev.type!=Symbol.Types.INT || a1.type!=Symbol.Types.INT) {
 				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
 			}
-			//Calculo
+			//Calculo-- Multiplicacion en código P
 			mid = new Attributes(prev.valInt);
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.TMS);
 		}
 		else if(op.kind==tDIV) {
 			//Los dos tienen que ser enteros
@@ -1224,6 +1315,9 @@ Attributes factor_nivel3_plus(Attributes prev) :
 			}
 			//Calculo
 			mid = new Attributes(prev.valInt);
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.DIV);
 		}
 		else if(op.kind==tMOD) {
 			//Los dos tienen que ser enteros
@@ -1232,6 +1326,9 @@ Attributes factor_nivel3_plus(Attributes prev) :
 			}
 			//Calculo
 			mid = new Attributes(prev.valInt);
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.MOD);
 		}
 		else if(op.kind==tAND) {
 			//Los dos tienen que ser booleanos
@@ -1240,6 +1337,9 @@ Attributes factor_nivel3_plus(Attributes prev) :
 			}
 			//Calculo
 			mid = new Attributes(true);
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.AND);
 		}
 	}
 	a2=factor_nivel3_plus(mid)
@@ -1263,6 +1363,7 @@ Attributes factor() :
 	t1 = <tNUM>
 	{
 		output = new Attributes(Integer.parseInt(t1.image));
+		output.code.addInst(OpCode.STC,Integer.parseInt(t1.image));
 		
 		return output;
 	}

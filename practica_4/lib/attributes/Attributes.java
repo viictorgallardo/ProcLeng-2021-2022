@@ -9,6 +9,7 @@
 
 package lib.attributes;
 import lib.symbolTable.*;
+import lib.tools.codeGeneration.CodeBlock;
 
 public class Attributes implements Cloneable {
     public Symbol.Types type;
@@ -21,6 +22,8 @@ public class Attributes implements Cloneable {
     public Symbol.Types baseType;
     public int tam;
     public boolean isConstant;
+
+    public CodeBlock code = new CodeBlock();
 
     public Attributes(int value) {
         this.valInt = value;
