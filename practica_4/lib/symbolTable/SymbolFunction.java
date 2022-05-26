@@ -18,6 +18,8 @@ public class SymbolFunction extends Symbol implements Cloneable {
     //necesario mantener la información de los parámetros.
     public ArrayList<Symbol> parList;
 
+    public String etiqueta = "";
+
     public Types returnType; //tipo de la función
 
     public SymbolFunction(String _name, ArrayList<Symbol> _parList, 

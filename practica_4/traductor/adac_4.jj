@@ -271,7 +271,17 @@ void S () :
 
 }
 {
-	(instruccion())+ < EOF >
+	(instruccion())+ < EOF > 
+	{
+		CodeBlock c = new CodeBlock();
+		c.addInst(OpCode.LVP);
+
+		try {
+			pcode.write(c.toString());
+		} catch (Exception e) {
+			System.err.println(e);
+		}
+	}
 }
 
 void instruccion () :
@@ -521,18 +531,35 @@ void inst_declaracion_func() :
 	Symbol.Types tipo = Symbol.Types.UNDEFINED;
 	ArrayList<Symbol> argums = null;
 	Symbol parametro = null;
+	SymbolFunction s = null;
+	CodeBlock c = new CodeBlock();
 }
 {
 	<tFUNCTION> tipo = tipos() nombre = <tID> (argums = argumentos())?
 	{
 		try{
-			SymbolFunction s = new SymbolFunction(nombre.image, argums,tipo); //TODO numero de parametros
+			s = new SymbolFunction(nombre.image, argums,tipo); //TODO numero de parametros
 			s.constant = true;
-
+			s.etiqueta = CGU.newLabel();
 
 			tabla.insertSymbol(s);
 			tabla.insertStack(s);
 			tabla.insertBlock();
+
+			
+			if(s.nivel == 0) {
+				c = new CodeBlock();
+				c.addInst(OpCode.ENP,s.etiqueta);
+
+				try {
+					pcode.write(c.toString());
+				} catch (Exception e) {
+					System.err.println(e);
+				}
+			}
+			else {
+				//TODO: Abrir nuevo stackframe :)
+			}
 			
 				
 			if(argums.size() != 0){
@@ -547,7 +574,17 @@ void inst_declaracion_func() :
 			errorSem.deteccion(e, nombre );
 		}
 	}
-	<tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
+	<tIS> declaracion_variables() <tBEGIN>
+	{
+		c = new CodeBlock();
+		c.addLabel(s.etiqueta);
+		try {
+			pcode.write(c.toString());
+		} catch (Exception e) {
+			System.err.println(e);
+		}
+	}
+	(instruccion())* <tEND>
 	{
 		//System.out.println(tabla.toString());
 		tabla.removeBlock();
@@ -560,17 +597,35 @@ void inst_declaracion_proc():
 	Token nombre = null;
 	ArrayList<Symbol> argums = new ArrayList<Symbol>();
 	Symbol parametro = null;
+	SymbolProcedure s = null;
+	CodeBlock c = new CodeBlock();
 }
 {
 	<tPROCEDURE> nombre = <tID> (argums = argumentos())?
 	{
 		try{
-			SymbolProcedure s = new SymbolProcedure(nombre.image, argums); //TODO numero de parametros
+			s = new SymbolProcedure(nombre.image, argums); //TODO numero de parametros
 			s.constant = true;
+			s.etiqueta = CGU.newLabel();
 			
 			tabla.insertSymbol(s);
 			tabla.insertStack(s);
 			tabla.insertBlock();
+			
+
+			if(s.nivel == 0) {
+				c = new CodeBlock();
+				c.addInst(OpCode.ENP,s.etiqueta);
+
+				try {
+					pcode.write(c.toString());
+				} catch (Exception e) {
+					System.err.println(e);
+				}
+			}
+			else {
+				//TODO: Abrir nuevo stackframe :)
+			}
 
 			if(argums.size() != 0) {
 				for(int i=0; i< argums.size(); i++){
@@ -585,7 +640,17 @@ void inst_declaracion_proc():
 			errorSem.deteccion(e, nombre );
 		}
 	}
-	<tIS> declaracion_variables() <tBEGIN> (instruccion())* <tEND>
+	<tIS> declaracion_variables() <tBEGIN>
+	{
+		c = new CodeBlock();
+		c.addLabel(s.etiqueta);
+		try {
+			pcode.write(c.toString());
+		} catch (Exception e) {
+			System.err.println(e);
+		}
+	}
+	(instruccion())* <tEND>
 	{
 		//System.out.println(tabla.toString());
 		tabla.removeBlock();
@@ -1056,18 +1121,18 @@ void inst_asig() :
 	Token temp;
 }
 {
-	asig = asignable() temp=<tASIGNACION> expr = expr(a)
+	asig = asignable() temp=<tASIGNACION> expr=expr(a)
 	{
 		if(asig.constant){
 			System.err.println("Error: " + asig.name + "es una cte. usada como variable");
 		}
-		else{
+		else {
 			if ((asig.type != expr.type) && (asig.type != Symbol.Types.ARRAY)){ // SE COMPRUEBA QUE EL ASIGNABLE Y LA EXPRESION A ASIGNAR SEAN DEL MISMO TIPO
 				errorSem.deteccion(new TypeErrorException(), temp, asig.type);
 			}
 			else{
 				if(asig.type == Symbol.Types.ARRAY){
-
+					//TODO
 				}
 				else if(asig.type == Symbol.Types.INT){
 					SymbolInt s = (SymbolInt)asig;
@@ -1083,6 +1148,21 @@ void inst_asig() :
 				}
 			}
 		}
+
+		CodeBlock c = new CodeBlock();
+		Symbol f = tabla.peekStack();
+		c.addInst(OpCode.SRF, f.nivel+1-asig.nivel, (int)asig.dir);
+		c.addBlock(expr.code);
+		c.addInst(OpCode.ASG);
+
+		c.encloseXMLTags("inst_asig");
+
+		try {
+			pcode.write(c.toString());
+		} catch (Exception e) {
+			System.err.println(e);
+		}
+
 	}
 }
 
@@ -1598,14 +1678,41 @@ void inst_while() :
 	Attributes a = new Attributes();
 	Attributes condition = new Attributes();
 	Token buc;
+	CodeBlock c = new CodeBlock();
+	String etiqueta = CGU.newLabel();
+	String etiquetaFinal = CGU.newLabel();
 }
 {
 	try {
-		buc = <tWHILE> condition = expr(a) <tDO> (instruccion())* <tEND>
+		buc = <tWHILE> condition = expr(a) <tDO>
 		{
 			if(condition.type != Symbol.Types.BOOL){
 				System.err.println("Tipo que me llega: "+condition.type);
 				errorSem.deteccion(new TypeErrorException(),buc,Symbol.Types.BOOL);
+			}
+			c = new CodeBlock();
+
+			c.addLabel(etiqueta);
+			c.addBlock(condition.code);
+			c.addInst(OpCode.JMF,etiquetaFinal);
+
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+		(instruccion())* <tEND>
+		{
+			c = new CodeBlock();
+
+			c.addInst(OpCode.JMP,etiqueta);
+			c.addLabel(etiquetaFinal);
+
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
 			}
 		}
 	}
