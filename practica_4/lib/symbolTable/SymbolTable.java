@@ -66,7 +66,11 @@ public class SymbolTable {
 
     //elimina un bloque
     public Symbol peekStack() {
-        return tr.peek();
+        try {
+            return tr.peek();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     //elimina un bloque
