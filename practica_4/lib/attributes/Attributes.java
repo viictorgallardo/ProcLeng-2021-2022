@@ -23,6 +23,7 @@ public class Attributes implements Cloneable {
     public int tam;
     public boolean isConstant;
 
+    public Symbol miSimbolo;
     public CodeBlock code = new CodeBlock();
 
     public Attributes(int value) {

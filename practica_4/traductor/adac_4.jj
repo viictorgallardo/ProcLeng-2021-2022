@@ -546,6 +546,16 @@ void inst_declaracion_func() :
 			tabla.insertStack(s);
 			tabla.insertBlock();
 
+			if(argums.size() != 0){
+				Symbol f = tabla.peekStack();
+				for(int i=argums.size()-1; i>=0; i--){
+					parametro = argums.get(i);
+					parametro.dir = CGU.memorySpaces[f.nivel]+3;
+					CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
+					parametro.nivel = f.nivel;
+					tabla.insertSymbol(parametro);
+				}
+			}
 			
 			if(s.nivel == 0) {
 				c = new CodeBlock();
@@ -558,17 +568,20 @@ void inst_declaracion_func() :
 				}
 			}
 			else {
-				//TODO: Abrir nuevo stackframe :)
-			}
-			
-				
-			if(argums.size() != 0){
-				for(int i =0; i< argums.size(); i++){
-					parametro = argums.get(i);
-					tabla.insertSymbol(parametro);
+				c = new CodeBlock();
+				c.addLabel(s.etiqueta);
+				//Recuperamos los parametros de un procedimiento
+				for(int i=argums.size()-1; i>=0 ; i--) {
+					c.addInst(OpCode.SRF,0,i+3);
+					c.addInst(OpCode.ASGI);
+				}
+
+				try {
+					pcode.write(c.toString());
+				} catch (Exception e) {
+					System.err.println(e);
 				}
 			}
-			s.toString();
 			
 		}catch(AlreadyDefinedSymbolException e){
 			errorSem.deteccion(e, nombre );
@@ -576,17 +589,28 @@ void inst_declaracion_func() :
 	}
 	<tIS> declaracion_variables() <tBEGIN>
 	{
+		if(s.nivel == 0) {
+			c = new CodeBlock();
+			c.addLabel(s.etiqueta);
+			
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+	}
+	(instruccion())* <tEND>
+	{
 		c = new CodeBlock();
-		c.addLabel(s.etiqueta);
+		c.addInst(OpCode.CSF);
+		
 		try {
 			pcode.write(c.toString());
 		} catch (Exception e) {
 			System.err.println(e);
 		}
-	}
-	(instruccion())* <tEND>
-	{
-		//System.out.println(tabla.toString());
+
 		tabla.removeBlock();
 		tabla.removeStack();
 	}
@@ -612,6 +636,17 @@ void inst_declaracion_proc():
 			tabla.insertStack(s);
 			tabla.insertBlock();
 			
+			if(argums.size() != 0) {
+				Symbol f = tabla.peekStack();
+				for(int i=argums.size()-1; i>=0; i--){
+					parametro = argums.get(i);
+					System.out.println(argums.get(i));
+					parametro.dir = CGU.memorySpaces[f.nivel]+3;
+					CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
+					parametro.nivel = f.nivel;
+					tabla.insertSymbol(parametro);
+				}
+			}
 
 			if(s.nivel == 0) {
 				c = new CodeBlock();
@@ -624,17 +659,20 @@ void inst_declaracion_proc():
 				}
 			}
 			else {
-				//TODO: Abrir nuevo stackframe :)
-			}
+				c = new CodeBlock();
+				c.addLabel(s.etiqueta);
+				//Recuperamos los parametros de un procedimiento
+				for(int i=argums.size()-1; i>=0 ; i--) {
+					c.addInst(OpCode.SRF,0,i+3);
+					c.addInst(OpCode.ASGI);
+				}
 
-			if(argums.size() != 0) {
-				for(int i=0; i< argums.size(); i++){
-					parametro = argums.get(i);
-					tabla.insertSymbol(parametro);
+				try {
+					pcode.write(c.toString());
+				} catch (Exception e) {
+					System.err.println(e);
 				}
 			}
-			
-			
 
 		}catch(AlreadyDefinedSymbolException e){
 			errorSem.deteccion(e, nombre );
@@ -642,17 +680,28 @@ void inst_declaracion_proc():
 	}
 	<tIS> declaracion_variables() <tBEGIN>
 	{
+		if(s.nivel == 0) {
+			c = new CodeBlock();
+			c.addLabel(s.etiqueta);
+			
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+	}
+	(instruccion())* <tEND>
+	{
 		c = new CodeBlock();
-		c.addLabel(s.etiqueta);
+		c.addInst(OpCode.CSF);
+		
 		try {
 			pcode.write(c.toString());
 		} catch (Exception e) {
 			System.err.println(e);
 		}
-	}
-	(instruccion())* <tEND>
-	{
-		//System.out.println(tabla.toString());
+
 		tabla.removeBlock();
 		tabla.removeStack();
 	}
@@ -977,6 +1026,7 @@ Attributes inst_invocacion() :
 				Symbol mainProg = tabla.getLastStack();
 				if ((mainProg.type==Symbol.Types.FUNCTION) && (((SymbolFunction)mainProg)==f)) {
 					errorSem.deteccion(new ContextException(),t1);
+					//ERROR:
 					return new Attributes(f.returnType,Symbol.ParameterClass.NONE);
 				}
 				if(params.size()!=f.parList.size()) {
@@ -1001,7 +1051,24 @@ Attributes inst_invocacion() :
 						}
 					}
 				}
-				return new Attributes(f.returnType,Symbol.ParameterClass.NONE);
+				Attributes output = new Attributes(f.returnType,Symbol.ParameterClass.NONE);
+
+				//Apilar parametros
+				for (int i = 0; i<params.size(); i++) {
+					if(f.parList.get(i).parClass == Symbol.ParameterClass.REF) {
+						Symbol referencia = params.get(i).miSimbolo;
+						Symbol p = tabla.peekStack();
+						output.code.addInst(OpCode.SRF,p.nivel+1-referencia.nivel,(int)referencia.dir);
+					}
+					else {
+						output.code.addBlock(params.get(i).code);
+					}
+				}
+				//Llamar OSF
+				Symbol p = tabla.peekStack();
+				output.code.addOSFInst(CGU.memorySpaces[p.nivel],p.nivel+1-f.nivel,f.etiqueta);
+
+				return output;
 			}
 			else if (v.type == Symbol.Types.PROCEDURE) {
 				SymbolProcedure f = ((SymbolProcedure)v);
@@ -1032,10 +1099,28 @@ Attributes inst_invocacion() :
 						}
 					}
 				}
-				return new Attributes(Symbol.Types.UNDEFINED,Symbol.ParameterClass.NONE);
+				Attributes output = new Attributes(Symbol.Types.UNDEFINED,Symbol.ParameterClass.NONE);
+
+				
+				//Apilar parametros
+				for (int i = 0; i<params.size(); i++) {
+					if(f.parList.get(i).parClass == Symbol.ParameterClass.REF) {
+						Symbol referencia = params.get(i).miSimbolo;
+						Symbol p = tabla.peekStack();
+						output.code.addInst(OpCode.SRF,p.nivel+1-referencia.nivel,(int)referencia.dir);
+					}
+					else {
+						output.code.addBlock(params.get(i).code);
+					}
+				}
+				//Llamar OSF
+				Symbol p = tabla.peekStack();
+				output.code.addOSFInst(CGU.memorySpaces[p.nivel],p.nivel+1-f.nivel,f.etiqueta);
+				return output;
 			}
 			else {
 				errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.FUNCTION, Symbol.Types.PROCEDURE);
+				//ERROR
 				return new Attributes();
 			}
 		}
@@ -1152,6 +1237,9 @@ void inst_asig() :
 		CodeBlock c = new CodeBlock();
 		Symbol f = tabla.peekStack();
 		c.addInst(OpCode.SRF, f.nivel+1-asig.nivel, (int)asig.dir);
+		if(asig.parClass == Symbol.ParameterClass.REF) {
+			c.addInst(OpCode.DRF);
+		}
 		c.addBlock(expr.code);
 		c.addInst(OpCode.ASG);
 
@@ -1600,6 +1688,7 @@ Attributes factor() :
 				output = new Attributes(((SymbolArray)v).baseType, Symbol.ParameterClass.REF);
 			}
 			
+			output.miSimbolo = v;
 			return output;
 		}
 		catch(SymbolNotFoundException e) {
@@ -1643,10 +1732,14 @@ Attributes factor() :
 			else { //Nunca deberia entrar aqui
 				output = new Attributes();
 			}
+			output.miSimbolo = v;
 
 			Symbol f = tabla.peekStack();
 			output.code.addInst(OpCode.SRF,f.nivel+1-v.nivel,(int)v.dir);
 			output.code.addInst(OpCode.DRF);
+			if(v.parClass == Symbol.ParameterClass.REF) {
+				output.code.addInst(OpCode.DRF);
+			}
 
 			return output;
 
