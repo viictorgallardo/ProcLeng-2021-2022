@@ -58,6 +58,7 @@ public class adac_4 {
 	public static Symbol crearParametro(Token nombre, Attributes dim, Symbol.Types tipo, 
 	boolean ref , boolean insertarEnTabla){
 		Symbol s = null;
+		Symbol f = tabla.peekStack();
 		
 		if(dim != null){
 			s = new SymbolArray(nombre.image,dim.valInt,tipo);
@@ -70,6 +71,9 @@ public class adac_4 {
 			s.constant = false;
 			if(insertarEnTabla == true){
 				try{
+					s.dir = CGU.memorySpaces[f.nivel]+3;
+					CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
+					s.nivel = f.nivel;
 					tabla.insertSymbol(s);
 				}
 				catch(AlreadyDefinedSymbolException e){
@@ -90,6 +94,9 @@ public class adac_4 {
 				s.constant = false;
 				if(insertarEnTabla == true){
 					try{
+						s.dir = CGU.memorySpaces[f.nivel]+3;
+						CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
+						s.nivel = f.nivel;
 						tabla.insertSymbol(s);
 					}
 					catch(AlreadyDefinedSymbolException e){
@@ -109,6 +116,9 @@ public class adac_4 {
 				s.constant = false;
 				if(insertarEnTabla == true){
 					try{
+						s.dir = CGU.memorySpaces[f.nivel]+3;
+						CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
+						s.nivel = f.nivel;
 						tabla.insertSymbol(s);
 					}
 					catch(AlreadyDefinedSymbolException e){
@@ -128,6 +138,9 @@ public class adac_4 {
 				s.constant = false;
 				if(insertarEnTabla == true){
 					try{
+						s.dir = CGU.memorySpaces[f.nivel]+3;
+						CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
+						s.nivel = f.nivel;
 						tabla.insertSymbol(s);
 					}
 					catch(AlreadyDefinedSymbolException e){
@@ -286,7 +299,7 @@ void S () :
 
 void instruccion () :
 {
-	
+	System.out.println(tabla);
 }
 {
 	try {
@@ -411,16 +424,16 @@ Symbol variable(Symbol.Types tipo) :
 {
 	nombre = <tID> (<tCOPEN> dim = <tNUM> <tCCLOSE>)?
 	{
-		if(dim != null){
-			s = new SymbolArray(nombre.image,Integer.parseInt(dim.image),tipo);
-			s.constant = false;
-			try {
-				//TODO: Decidir direccion del array
-				tabla.insertSymbol(s);
-			}
-			catch(AlreadyDefinedSymbolException e){
-				errorSem.deteccion(e,nombre);
-			}	
+	if(dim != null){
+		s = new SymbolArray(nombre.image,Integer.parseInt(dim.image),tipo);
+		s.constant = false;
+		try {
+			//TODO: Decidir direccion del array
+			tabla.insertSymbol(s);
+		}
+		catch(AlreadyDefinedSymbolException e){
+			errorSem.deteccion(e,nombre);
+		}	
 		
 			return s;
 	}
@@ -611,6 +624,8 @@ void inst_declaracion_func() :
 			System.err.println(e);
 		}
 
+		Symbol f = tabla.peekStack();
+		CGU.memorySpaces[f.nivel] = 0;
 		tabla.removeBlock();
 		tabla.removeStack();
 	}
@@ -640,7 +655,6 @@ void inst_declaracion_proc():
 				Symbol f = tabla.peekStack();
 				for(int i=argums.size()-1; i>=0; i--){
 					parametro = argums.get(i);
-					System.out.println(argums.get(i));
 					parametro.dir = CGU.memorySpaces[f.nivel]+3;
 					CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
 					parametro.nivel = f.nivel;
@@ -702,6 +716,8 @@ void inst_declaracion_proc():
 			System.err.println(e);
 		}
 
+		Symbol f = tabla.peekStack();
+		CGU.memorySpaces[f.nivel] = 0;
 		tabla.removeBlock();
 		tabla.removeStack();
 	}
@@ -1714,6 +1730,7 @@ Attributes factor() :
 	{
 		try {
 			Symbol v = tabla.getSymbol(t1.image);
+			System.out.println("Encontrado "+v);
 			if (v.type!=Symbol.Types.INT && v.type!=Symbol.Types.CHAR && v.type!=Symbol.Types.BOOL && v.type!=Symbol.Types.ARRAY) {
 				errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.INT, Symbol.Types.CHAR, Symbol.Types.BOOL,Symbol.Types.ARRAY);
 			}
@@ -1730,6 +1747,7 @@ Attributes factor() :
 				output = new Attributes(((SymbolArray)v).baseType, ((SymbolArray)v).maxInd-((SymbolArray)v).minInd);
 			}
 			else { //Nunca deberia entrar aqui
+				System.err.println("ERROR");
 				output = new Attributes();
 			}
 			output.miSimbolo = v;
