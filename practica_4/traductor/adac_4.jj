@@ -346,6 +346,7 @@ void instruccion () :
 	|	LOOKAHEAD(2)  output=inst_invocacion() <tPCOMA> 
 	{
 		try {
+			output.code.encloseXMLTags("inst_invocacion");
 			pcode.write(output.code.toString());
 		} catch (Exception e) {
 			System.err.println(e);
@@ -1115,6 +1116,7 @@ Attributes inst_invocacion() :
 
 				//Apilar parametros
 				for (int i = 0; i<params.size(); i++) {
+					output.code.addComment("Apilar parametro "+i);
 					if(f.parList.get(i).parClass == Symbol.ParameterClass.REF) {
 						Symbol referencia = params.get(i).miSimbolo;
 						Symbol p = tabla.peekStack();
@@ -1126,6 +1128,7 @@ Attributes inst_invocacion() :
 				}
 				//Llamar OSF
 				Symbol p = tabla.peekStack();
+				output.code.addComment("Invocacion");
 				output.code.addOSFInst(CGU.memorySpaces[p.nivel],p.nivel+1-f.nivel,f.etiqueta);
 
 				return output;
@@ -1164,6 +1167,7 @@ Attributes inst_invocacion() :
 				
 				//Apilar parametros
 				for (int i = 0; i<params.size(); i++) {
+					output.code.addComment("Apilar parametro "+i);
 					if(f.parList.get(i).parClass == Symbol.ParameterClass.REF) {
 						Symbol referencia = params.get(i).miSimbolo;
 						Symbol p = tabla.peekStack();
@@ -1175,6 +1179,7 @@ Attributes inst_invocacion() :
 				}
 				//Llamar OSF
 				Symbol p = tabla.peekStack();
+				output.code.addComment("Invocacion");
 				output.code.addOSFInst(CGU.memorySpaces[p.nivel],p.nivel+1-f.nivel,f.etiqueta);
 				return output;
 			}
