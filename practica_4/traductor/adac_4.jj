@@ -299,7 +299,7 @@ void S () :
 
 void instruccion () :
 {
-	System.out.println(tabla);
+
 }
 {
 	try {
@@ -318,7 +318,7 @@ void instruccion () :
 	|	inst_return() <tPCOMA> 
 	}
 	catch(ParseException e) {
-		System.out.println(e.toString());
+		System.err.println(e.toString());
 		Token t;
 		do {
 		  t = getNextToken();
@@ -1730,7 +1730,6 @@ Attributes factor() :
 	{
 		try {
 			Symbol v = tabla.getSymbol(t1.image);
-			System.out.println("Encontrado "+v);
 			if (v.type!=Symbol.Types.INT && v.type!=Symbol.Types.CHAR && v.type!=Symbol.Types.BOOL && v.type!=Symbol.Types.ARRAY) {
 				errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.INT, Symbol.Types.CHAR, Symbol.Types.BOOL,Symbol.Types.ARRAY);
 			}
