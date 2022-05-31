@@ -299,22 +299,58 @@ void S () :
 
 void instruccion () :
 {
-
+	Attributes output;
+	CodeBlock c;
 }
 {
 	try {
-		LOOKAHEAD(2)  inst_asig() <tPCOMA> 
-	|	inst_get() <tPCOMA> 
+		LOOKAHEAD(2)  c=inst_asig() <tPCOMA> 
+		{
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+	|	c = inst_get() <tPCOMA> 
+		{
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
 	|	inst_skip_line() <tPCOMA> 
 	|	inst_int2char() <tPCOMA> 
 	|	inst_char2int() <tPCOMA> 
-	|	inst_escribir() <tPCOMA>  
-	| 	inst_escribir_linea() <tPCOMA> 
-	|	inst_declaracion_metodo() 
-	|	inst_declaracion_variable() <tPCOMA> 
-	|	inst_while() 
+	|	c = inst_escribir() <tPCOMA>  
+		{
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+	| 	c = inst_escribir_linea() <tPCOMA> 
+		{
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+	|	inst_declaracion_metodo() //Ya gestiona el codigo dentro
+	|	inst_declaracion_variable() <tPCOMA> //No genera codigo
+	|	inst_while() //Ya gestiona el codigo dentro
 	| 	inst_seleccion()  
-	|	LOOKAHEAD(2)  inst_invocacion() <tPCOMA> 
+	|	LOOKAHEAD(2)  output=inst_invocacion() <tPCOMA> 
+	{
+		try {
+			pcode.write(output.code.toString());
+		} catch (Exception e) {
+			System.err.println(e);
+		}
+	}
 	|	inst_return() <tPCOMA> 
 	}
 	catch(ParseException e) {
@@ -359,34 +395,29 @@ Attributes inst_char2int() :
 	}
 }
 
-void inst_get() :
+CodeBlock inst_get() :
 {
 	Token temp;
 	ArrayList<Symbol> params = new ArrayList<Symbol>();
+	CodeBlock output = new CodeBlock();
 }
 {
 	<tGET> temp=<tPOPEN> params = list_asignables(temp) <tPCLOSE> 
 	{
 		Symbol f = tabla.peekStack();
-		CodeBlock c = new CodeBlock();
 
 		for (Symbol s: params) {
-			c.addInst(OpCode.SRF,f.nivel+1-s.nivel,(int)s.dir);
+			output.addInst(OpCode.SRF,f.nivel+1-s.nivel,(int)s.dir);
 			if (s.type == Symbol.Types.CHAR) {
-				c.addInst(OpCode.RD,0);
+				output.addInst(OpCode.RD,0);
 			}
 			else {
-				c.addInst(OpCode.RD,1);
+				output.addInst(OpCode.RD,1);
 			}
 		}
 		//leer de la entrada (apilar en la pila)
-		c.encloseXMLTags("inst_get");
-
-		try {
-			pcode.write(c.toString());
-		} catch (Exception e) {
-			System.err.println(e);
-		}
+		output.encloseXMLTags("inst_get");
+		return output;
 	}
 }
 
@@ -585,9 +616,12 @@ void inst_declaracion_func() :
 				c.addLabel(s.etiqueta);
 				//Recuperamos los parametros de un procedimiento
 				for(int i=argums.size()-1; i>=0 ; i--) {
+					c.addComment("Recuperar parametro "+i);
 					c.addInst(OpCode.SRF,0,i+3);
 					c.addInst(OpCode.ASGI);
 				}
+
+				c.encloseXMLTags("inst_declaracion_func");
 
 				try {
 					pcode.write(c.toString());
@@ -615,13 +649,16 @@ void inst_declaracion_func() :
 	}
 	(instruccion())* <tEND>
 	{
-		c = new CodeBlock();
-		c.addInst(OpCode.CSF);
-		
-		try {
-			pcode.write(c.toString());
-		} catch (Exception e) {
-			System.err.println(e);
+		if(s.nivel != 0) {
+			c = new CodeBlock();
+			c.addComment("Return");
+			c.addInst(OpCode.CSF);
+			
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
 		}
 
 		Symbol f = tabla.peekStack();
@@ -677,9 +714,12 @@ void inst_declaracion_proc():
 				c.addLabel(s.etiqueta);
 				//Recuperamos los parametros de un procedimiento
 				for(int i=argums.size()-1; i>=0 ; i--) {
+					c.addComment("Recuperar parametro "+i);
 					c.addInst(OpCode.SRF,0,i+3);
 					c.addInst(OpCode.ASGI);
 				}
+
+				c.encloseXMLTags("inst_declaracion_proc");
 
 				try {
 					pcode.write(c.toString());
@@ -724,84 +764,86 @@ void inst_declaracion_proc():
 }
 
 
-void inst_escribir():
+CodeBlock inst_escribir():
 {
 	ArrayList<Attributes> lista = new ArrayList<Attributes>();
 	Token temp;
+	CodeBlock output = new CodeBlock();
 }
 {
 	<tPUT> temp=<tPOPEN> lista=list_expr() <tPCLOSE>
 	{
-		CodeBlock c = new CodeBlock();
+		int i = 0;
 		for(Attributes a: lista) {
 			if(a.type!=Symbol.Types.INT && a.type!=Symbol.Types.BOOL && a.type!=Symbol.Types.CHAR && a.type!=Symbol.Types.STRING) {
 				errorSem.deteccion(new TypeErrorException(), temp, Symbol.Types.INT,Symbol.Types.BOOL,Symbol.Types.CHAR,Symbol.Types.STRING);
 			}
 			if(a.type == Symbol.Types.CHAR) {
-				a.code.addInst(OpCode.WRT,0);
+				output.addComment("Variable "+i+", tipo char");
+				output.addBlock(a.code);
+				output.addInst(OpCode.WRT,0);
 				// Se añade al bloque para escribirlo posteriormente
-				c.addBlock(a.code);
 			}
 			else if (a.type == Symbol.Types.STRING) {
+				output.addComment("Variable "+i+", tipo string");
 				for (CodeElement inst: a.code.code) {
-					c.code.add(inst);
-					c.addInst(OpCode.WRT,0);
+					output.code.add(inst);
+					output.addInst(OpCode.WRT,0);
 				}
 			}
 			else {
-				a.code.addInst(OpCode.WRT,1);
-				// Se añade al bloque para escribirlo posteriormente
-				c.addBlock(a.code);
+				output.addComment("Variable "+i+", tipo int");
+				output.addBlock(a.code);
+				output.addInst(OpCode.WRT,1);
 			}
-			
+			i = i+1;
 		}
-		c.encloseXMLTags("inst_put");
-		try {
-			pcode.write(c.toString());
-		} catch (Exception e) {
-			System.err.println(e);
-		}
+		output.encloseXMLTags("inst_put");
+
+		return output;
 	}
 }
 
-void inst_escribir_linea():
+CodeBlock inst_escribir_linea():
 {
 	ArrayList<Attributes> lista = new ArrayList<Attributes>();
 	Token temp;
+	CodeBlock output = new CodeBlock();
 }
 {
 	<tPUTLINE> temp=<tPOPEN> (lista=list_expr())? <tPCLOSE>
 	{
-		CodeBlock c = new CodeBlock();
+		int i = 0;
 		for(Attributes a: lista) {
 			if(a.type!=Symbol.Types.INT && a.type!=Symbol.Types.BOOL && a.type!=Symbol.Types.CHAR && a.type!=Symbol.Types.STRING) {
 				errorSem.deteccion(new TypeErrorException(), temp, Symbol.Types.INT,Symbol.Types.BOOL,Symbol.Types.CHAR,Symbol.Types.STRING);
 			}
 			if(a.type == Symbol.Types.CHAR) {
-				a.code.addInst(OpCode.WRT,0);
+				output.addComment("Variable "+i+", tipo char");
+				output.addBlock(a.code);
+				output.addInst(OpCode.WRT,0);
 				// Se añade al bloque para escribirlo posteriormente
-				c.addBlock(a.code);
 			}
 			else if (a.type == Symbol.Types.STRING) {
+				output.addComment("Variable "+i+", tipo string");
 				for (CodeElement inst: a.code.code) {
-					c.code.add(inst);
-					c.addInst(OpCode.WRT,0);
+					output.code.add(inst);
+					output.addInst(OpCode.WRT,0);
 				}
 			}
 			else {
-				a.code.addInst(OpCode.WRT,1);
-				// Se añade al bloque para escribirlo posteriormente
-				c.addBlock(a.code);
+				output.addComment("Variable "+i+", tipo int");
+				output.addBlock(a.code);
+				output.addInst(OpCode.WRT,1);
 			}
+			i = i+1;
 		}
-		c.addInst(OpCode.STC,10);
-		c.addInst(OpCode.WRT,0);
-		c.encloseXMLTags("inst_put_line");
-		try {
-			pcode.write(c.toString());
-		} catch (Exception e) {
-			System.err.println(e);
-		}
+		output.addComment("Escribir \\n");
+		output.addInst(OpCode.STC,10);
+		output.addInst(OpCode.WRT,0);
+		output.encloseXMLTags("inst_put_line");
+		
+		return output;
 	}
 }
 
@@ -823,8 +865,11 @@ void inst_seleccion():
 			}
 			c = new CodeBlock();
 
+			c.addComment("Condicion");
 			c.addBlock(condition.code);
 			c.addInst(OpCode.JMF, label);
+
+			c.encloseXMLTags("inst_if");
 
 			try {
 				pcode.write(c.toString());
@@ -836,6 +881,7 @@ void inst_seleccion():
 		{
 			c = new CodeBlock();
 
+			c.addComment("Saltar al final del if(+else)");
 			c.addInst(OpCode.JMP, labelFin);
 			c.addLabel(label);
 
@@ -870,13 +916,11 @@ void inst_seleccion():
 
 void masIf() :
 {
-
+	
 }
 {
 	(<tELSE> (instruccion())*)?
-	{
-		
-	}
+	
 	
 }
 // Regla relativa a los argumentos que se le pasa a una función
@@ -1214,12 +1258,13 @@ ArrayList<Attributes> list_expr_plus() :
 
 //ASIGNACIONES
 
-void inst_asig() :
+CodeBlock inst_asig() :
 {
 	Symbol asig = null;
 	Attributes expr = null;
 	Attributes a = new Attributes();
 	Token temp;
+	CodeBlock output = new CodeBlock();
 }
 {
 	asig = asignable() temp=<tASIGNACION> expr=expr(a)
@@ -1250,23 +1295,20 @@ void inst_asig() :
 			}
 		}
 
-		CodeBlock c = new CodeBlock();
 		Symbol f = tabla.peekStack();
-		c.addInst(OpCode.SRF, f.nivel+1-asig.nivel, (int)asig.dir);
+		output.addComment("Referencia a asignable");
+		output.addInst(OpCode.SRF, f.nivel+1-asig.nivel, (int)asig.dir);
 		if(asig.parClass == Symbol.ParameterClass.REF) {
-			c.addInst(OpCode.DRF);
+			output.addInst(OpCode.DRF);
 		}
-		c.addBlock(expr.code);
-		c.addInst(OpCode.ASG);
+		output.addComment("Valor a asignar");
+		output.addBlock(expr.code);
+		output.addComment("Asignacion");
+		output.addInst(OpCode.ASG);
 
-		c.encloseXMLTags("inst_asig");
+		output.encloseXMLTags("inst_asig");
 
-		try {
-			pcode.write(c.toString());
-		} catch (Exception e) {
-			System.err.println(e);
-		}
-
+		return output;
 	}
 }
 
@@ -1803,8 +1845,11 @@ void inst_while() :
 			c = new CodeBlock();
 
 			c.addLabel(etiqueta);
+			c.addComment("Condicion");
 			c.addBlock(condition.code);
 			c.addInst(OpCode.JMF,etiquetaFinal);
+			
+			c.encloseXMLTags("inst_while");
 
 			try {
 				pcode.write(c.toString());
@@ -1816,6 +1861,7 @@ void inst_while() :
 		{
 			c = new CodeBlock();
 
+			c.addComment("Saltar a inicio del while");
 			c.addInst(OpCode.JMP,etiqueta);
 			c.addLabel(etiquetaFinal);
 
