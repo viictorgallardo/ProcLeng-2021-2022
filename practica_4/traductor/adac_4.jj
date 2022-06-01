@@ -320,9 +320,16 @@ void instruccion () :
 				System.err.println(e);
 			}
 		}
-	|	inst_skip_line() <tPCOMA> 
-	|	inst_int2char() <tPCOMA> 
-	|	inst_char2int() <tPCOMA> 
+	|	c = inst_skip_line() <tPCOMA> 
+		{
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+	|	inst_int2char() <tPCOMA> //La invocacion desnuda no genera codigo
+	|	inst_char2int() <tPCOMA> //La invocacion desnuda no genera codigo
 	|	c = inst_escribir() <tPCOMA>  
 		{
 			try {
@@ -422,12 +429,29 @@ CodeBlock inst_get() :
 	}
 }
 
-void inst_skip_line() :
+CodeBlock inst_skip_line() :
 {
-
+	CodeBlock output = new CodeBlock();
+	String label = "";
 }
 {
 	<tSKIPLINE> <tPOPEN> <tPCLOSE>
+	{
+		label = CGU.newLabel();
+		output.addLabel(label);
+		Symbol f = tabla.peekStack();
+		output.addInst(OpCode.SRF, 0, CGU.memorySpaces[f.nivel]+3);
+		output.addInst(OpCode.RD);
+		output.addInst(OpCode.SRF, 0, CGU.memorySpaces[f.nivel]+3);
+		output.addInst(OpCode.DRF);
+		output.addInst(OpCode.STC, 10);
+		output.addInst(OpCode.EQ);
+		output.addInst(OpCode.JMF, label);
+
+		output.encloseXMLTags("inst_skip_line");
+
+		return output;
+	}
 }
 
 
