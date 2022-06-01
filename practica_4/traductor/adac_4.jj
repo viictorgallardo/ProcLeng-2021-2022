@@ -644,7 +644,7 @@ void inst_declaracion_func() :
 						}
 						else {
 							CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+(arr.maxInd - arr.minInd);
-							aRecuperar += (arr.maxInd - arr.minInd)+1;
+							aRecuperar += (arr.maxInd - arr.minInd);
 						}
 					}
 					else {
@@ -764,7 +764,7 @@ void inst_declaracion_proc():
 						}
 						else {
 							CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+(arr.maxInd - arr.minInd);
-							aRecuperar += (arr.maxInd - arr.minInd)+1;
+							aRecuperar += (arr.maxInd - arr.minInd);
 						}
 					}
 					else {
