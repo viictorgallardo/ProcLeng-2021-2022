@@ -342,7 +342,7 @@ void instruccion () :
 	|	inst_declaracion_metodo() //Ya gestiona el codigo dentro
 	|	inst_declaracion_variable() <tPCOMA> //No genera codigo
 	|	inst_while() //Ya gestiona el codigo dentro
-	| 	inst_seleccion()  
+	| 	inst_seleccion()  //Ya gestiona el codigo dentro
 	|	LOOKAHEAD(2)  output=inst_invocacion() <tPCOMA> 
 	{
 		try {
