@@ -351,15 +351,22 @@ void instruccion () :
 	|	inst_while() //Ya gestiona el codigo dentro
 	| 	inst_seleccion()  //Ya gestiona el codigo dentro
 	|	LOOKAHEAD(2)  output=inst_invocacion() <tPCOMA> 
-	{
-		try {
-			output.code.encloseXMLTags("inst_invocacion");
-			pcode.write(output.code.toString());
-		} catch (Exception e) {
-			System.err.println(e);
+		{
+			try {
+				output.code.encloseXMLTags("inst_invocacion");
+				pcode.write(output.code.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
 		}
-	}
-	|	inst_return() <tPCOMA> 
+	|	c=inst_return() <tPCOMA> 
+		{
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
 	}
 	catch(ParseException e) {
 		System.err.println(e.toString());
@@ -561,11 +568,12 @@ void inst_declaracion_metodo() :
 
 
 
-void inst_return() :
+CodeBlock inst_return() :
 {
 	Attributes a = new Attributes();
 	Attributes a1;
 	Token temp;
+	CodeBlock output = new CodeBlock();
 }
 {
 	temp=<tRETURN> a1=expr(a)
@@ -574,13 +582,17 @@ void inst_return() :
 		SymbolFunction d;
 		if(r.type != Symbol.Types.FUNCTION) {
 			errorSem.deteccion(new ContextException(), temp);
-			return;
+			return output;
 		}
 		else {
 			d = ((SymbolFunction)r);
 			if(a1.type != d.returnType) {
 				errorSem.deteccion(new TypeErrorException(), temp, d.returnType);	
 			}
+			
+			output.addBlock(a1.code);
+			output.encloseXMLTags("inst_return");
+			return output;
 		}
 	}
 }
@@ -784,14 +796,16 @@ void inst_declaracion_proc():
 	}
 	(instruccion())* <tEND>
 	{
-		c = new CodeBlock();
-		c.addComment("End procedure");
-		c.addInst(OpCode.CSF);
-		
-		try {
-			pcode.write(c.toString());
-		} catch (Exception e) {
-			System.err.println(e);
+		if(s.nivel != 0) {
+			c = new CodeBlock();
+			c.addComment("End procedure");
+			c.addInst(OpCode.CSF);
+
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
 		}
 
 		Symbol f = tabla.peekStack();
@@ -1166,7 +1180,7 @@ Attributes inst_invocacion() :
 				//Llamar OSF
 				Symbol p = tabla.peekStack();
 				output.code.addComment("Invocacion");
-				output.code.addOSFInst(CGU.memorySpaces[p.nivel],p.nivel+1-f.nivel,f.etiqueta);
+				output.code.addOSFInst(CGU.memorySpaces[p.nivel]+3,p.nivel+1-f.nivel,f.etiqueta);
 
 				return output;
 			}
@@ -1217,7 +1231,7 @@ Attributes inst_invocacion() :
 				//Llamar OSF
 				Symbol p = tabla.peekStack();
 				output.code.addComment("Invocacion");
-				output.code.addOSFInst(CGU.memorySpaces[p.nivel],p.nivel+1-f.nivel,f.etiqueta);
+				output.code.addOSFInst(CGU.memorySpaces[p.nivel]+3,p.nivel+1-f.nivel,f.etiqueta);
 				return output;
 			}
 			else {
