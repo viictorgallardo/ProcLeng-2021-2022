@@ -578,6 +578,7 @@ void inst_declaracion_func() :
 	Symbol parametro = null;
 	SymbolFunction s = null;
 	CodeBlock c = new CodeBlock();
+	String etiquetainicio = "";
 }
 {
 	<tFUNCTION> tipo = tipos() nombre = <tID> (argums = argumentos())?
@@ -621,6 +622,8 @@ void inst_declaracion_func() :
 					c.addInst(OpCode.SRF,0,i+3);
 					c.addInst(OpCode.ASGI);
 				}
+				etiquetainicio = CGU.newLabel();
+				c.addInst(OpCode.JMP, etiquetainicio);
 
 				c.encloseXMLTags("inst_declaracion_func");
 
@@ -637,22 +640,25 @@ void inst_declaracion_func() :
 	}
 	<tIS> declaracion_variables() <tBEGIN>
 	{
+		c = new CodeBlock();
 		if(s.nivel == 0) {
-			c = new CodeBlock();
 			c.addLabel(s.etiqueta);
-			
-			try {
-				pcode.write(c.toString());
-			} catch (Exception e) {
-				System.err.println(e);
-			}
+		}
+		else {
+			c.addLabel(etiquetainicio);
+		}
+
+		try {
+			pcode.write(c.toString());
+		} catch (Exception e) {
+			System.err.println(e);
 		}
 	}
 	(instruccion())* <tEND>
 	{
 		if(s.nivel != 0) {
 			c = new CodeBlock();
-			c.addComment("Return");
+			c.addComment("End function");
 			c.addInst(OpCode.CSF);
 			
 			try {
@@ -676,6 +682,7 @@ void inst_declaracion_proc():
 	Symbol parametro = null;
 	SymbolProcedure s = null;
 	CodeBlock c = new CodeBlock();
+	String etiquetainicio = "";
 }
 {
 	<tPROCEDURE> nombre = <tID> (argums = argumentos())?
@@ -719,6 +726,8 @@ void inst_declaracion_proc():
 					c.addInst(OpCode.SRF,0,i+3);
 					c.addInst(OpCode.ASGI);
 				}
+				etiquetainicio = CGU.newLabel();
+				c.addInst(OpCode.JMP, etiquetainicio);
 
 				c.encloseXMLTags("inst_declaracion_proc");
 
@@ -735,20 +744,24 @@ void inst_declaracion_proc():
 	}
 	<tIS> declaracion_variables() <tBEGIN>
 	{
+		c = new CodeBlock();
 		if(s.nivel == 0) {
-			c = new CodeBlock();
 			c.addLabel(s.etiqueta);
-			
-			try {
-				pcode.write(c.toString());
-			} catch (Exception e) {
-				System.err.println(e);
-			}
+		}
+		else {
+			c.addLabel(etiquetainicio);
+		}
+
+		try {
+			pcode.write(c.toString());
+		} catch (Exception e) {
+			System.err.println(e);
 		}
 	}
 	(instruccion())* <tEND>
 	{
 		c = new CodeBlock();
+		c.addComment("End procedure");
 		c.addInst(OpCode.CSF);
 		
 		try {
