@@ -9,12 +9,14 @@ package lib.symbolTable;
 import java.util.Vector;
 
 import lib.symbolTable.exceptions.TypeErrorException;
+import lib.tools.codeGeneration.CodeBlock;
 
 
 public class SymbolArray extends Symbol implements Cloneable {
     public int minInd;
     public int maxInd;
     public Types baseType;
+    public CodeBlock indice;
  
 
     public SymbolArray(String _name) {
@@ -54,6 +56,10 @@ public class SymbolArray extends Symbol implements Cloneable {
         maxInd = _numComp - 1;
         baseType = _baseType;
         
+    }
+
+    public void setIndice(CodeBlock c) {
+        indice = c;
     }
 
     public String toString() {
