@@ -423,6 +423,7 @@ CodeBlock inst_get() :
 
 		for (Symbol s: params) {
 			output.addInst(OpCode.SRF,f.nivel+1-s.nivel,(int)s.dir);
+			output.addInst(OpCode.DRF);
 			if (s.type == Symbol.Types.CHAR) {
 				output.addInst(OpCode.RD,0);
 			}
