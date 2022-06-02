@@ -239,7 +239,7 @@ TOKEN :  //-----caracteres , operadores y separadores
  	< #LETTER: (["a"-"z","A"-"Z"]) >
 |	< #DIGIT: ["0"-"9"] >
 |	< tNUM: (<DIGIT>)+ >
-|	< tCAD: "\"" (~["\t","\n","\r"])* "\"" >
+|	< tCAD: "\"" (~["\t","\n","\r","\""])* "\"" >
 |	< tCH: "\'" (~["\t","\n","\r"])? "\'" >
 |	< tSUMA: "+" > 
 |	< tRESTA: "-">
@@ -492,7 +492,7 @@ Symbol variable(Symbol.Types tipo) :
 		s = new SymbolArray(nombre.image,Integer.parseInt(dim.image),tipo);
 		s.constant = false;
 		s.dir = CGU.memorySpaces[f.nivel]+3;
-		CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+Integer.parseInt(dim.image)-1;
+		CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+Integer.parseInt(dim.image);
 		s.nivel = f.nivel;
 		try {
 			tabla.insertSymbol(s);
@@ -593,6 +593,7 @@ CodeBlock inst_return() :
 			}
 			
 			output.addBlock(a1.code);
+			output.addInst(OpCode.CSF);
 			output.encloseXMLTags("inst_return");
 			return output;
 		}
@@ -643,8 +644,8 @@ void inst_declaracion_func() :
 							aRecuperar++;
 						}
 						else {
-							CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+(arr.maxInd - arr.minInd);
-							aRecuperar += (arr.maxInd - arr.minInd);
+							CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+(arr.maxInd - arr.minInd)+1;
+							aRecuperar += (arr.maxInd - arr.minInd)+1;
 						}
 					}
 					else {
@@ -652,6 +653,7 @@ void inst_declaracion_func() :
 						aRecuperar++;
 					}
 					parametro.nivel = f.nivel;
+					
 					tabla.insertSymbol(parametro);
 				}
 			}
@@ -763,8 +765,8 @@ void inst_declaracion_proc():
 							aRecuperar++;
 						}
 						else {
-							CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+(arr.maxInd - arr.minInd);
-							aRecuperar += (arr.maxInd - arr.minInd);
+							CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+(arr.maxInd - arr.minInd)+1;
+							aRecuperar += (arr.maxInd - arr.minInd)+1;
 						}
 					}
 					else {
@@ -772,6 +774,7 @@ void inst_declaracion_proc():
 						CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
 					}
 					parametro.nivel = f.nivel;
+
 					tabla.insertSymbol(parametro);
 				}
 			}
@@ -1205,14 +1208,22 @@ Attributes inst_invocacion() :
 						Symbol referencia = params.get(i).miSimbolo;
 						Symbol p = tabla.peekStack();
 						output.code.addInst(OpCode.SRF,p.nivel+1-referencia.nivel,(int)referencia.dir);
+						if(referencia.parClass == Symbol.ParameterClass.REF) {
+							output.code.addInst(OpCode.DRF);
+						}
 					}
 					else {
 						if(f.parList.get(i).type == Symbol.Types.ARRAY) {
 							SymbolArray referencia = ((SymbolArray) params.get(i).miSimbolo);
 							Symbol p = tabla.peekStack();
 							//Apilar todos los elementos
-							for (int k=referencia.maxInd-referencia.minInd-1; k>=0; k--) {
-								output.code.addInst(OpCode.SRF,p.nivel+1-referencia.nivel,((int)referencia.dir)+k);
+							for (int k=0; k<=referencia.maxInd-referencia.minInd; k++) {
+								output.code.addInst(OpCode.SRF,p.nivel+1-referencia.nivel,((int)referencia.dir));
+								if(referencia.parClass == Symbol.ParameterClass.REF) {
+									output.code.addInst(OpCode.DRF);
+								}
+								output.code.addInst(OpCode.STC, k);
+								output.code.addInst(OpCode.PLUS);
 								output.code.addInst(OpCode.DRF);
 							}
 						}
@@ -1267,14 +1278,22 @@ Attributes inst_invocacion() :
 						Symbol referencia = params.get(i).miSimbolo;
 						Symbol p = tabla.peekStack();
 						output.code.addInst(OpCode.SRF,p.nivel+1-referencia.nivel,(int)referencia.dir);
+						if(referencia.parClass == Symbol.ParameterClass.REF) {
+							output.code.addInst(OpCode.DRF);
+						}
 					}
 					else {
 						if(f.parList.get(i).type == Symbol.Types.ARRAY) {
 							SymbolArray referencia = ((SymbolArray) params.get(i).miSimbolo);
 							Symbol p = tabla.peekStack();
 							//Apilar todos los elementos
-							for (int k=referencia.maxInd-referencia.minInd-1; k>=0; k--) {
-								output.code.addInst(OpCode.SRF,p.nivel+1-referencia.nivel,((int)referencia.dir)+k);
+							for (int k=0; k<=referencia.maxInd-referencia.minInd; k++) {
+								output.code.addInst(OpCode.SRF,p.nivel+1-referencia.nivel,((int)referencia.dir));
+								if(referencia.parClass == Symbol.ParameterClass.REF) {
+									output.code.addInst(OpCode.DRF);
+								}
+								output.code.addInst(OpCode.STC, k);
+								output.code.addInst(OpCode.PLUS);
 								output.code.addInst(OpCode.DRF);
 							}
 						}
@@ -1402,7 +1421,6 @@ CodeBlock inst_asig() :
 					output.addComment("Offset");
 					output.addBlock(((SymbolArray)asig).indice);
 					output.addInst(OpCode.PLUS);
-					output.addInst(OpCode.DRF);
 				}
 				else if(asig.type == Symbol.Types.INT){
 					SymbolInt s = (SymbolInt)asig;
@@ -1977,7 +1995,7 @@ Attributes factor() :
 		}
 		output.valBool = !output.valBool;
 		
-		output.code.addInst(OpCode.NGI);
+		output.code.addInst(OpCode.NGB);
 
 		return output;
 	}
