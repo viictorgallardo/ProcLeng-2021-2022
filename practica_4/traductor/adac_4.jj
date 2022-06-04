@@ -1339,7 +1339,7 @@ ArrayList<Symbol> list_asignables(Token temp) :
 {
 	a1=asignable() output=list_asignables_plus()
 	{
-		if(a1.type!=Symbol.Types.CHAR && a1.type!=Symbol.Types.INT) {
+		if(a1.type!=Symbol.Types.CHAR && a1.type!=Symbol.Types.INT && (a1.type == Symbol.Types.ARRAY && ((SymbolArray)a1).baseType!=Symbol.Types.CHAR && ((SymbolArray)a1).baseType!=Symbol.Types.INT)) {
 			errorSem.deteccion(new TypeErrorException(), temp, Symbol.Types.INT, Symbol.Types.CHAR);
 		}
 		output.add(a1);
