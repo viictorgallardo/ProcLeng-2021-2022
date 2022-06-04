@@ -72,3 +72,15 @@ También se ha modificado ErrorSemantico para dar soporte a mostrar estos errore
 Además, se ha modificado la clase Attributes, añadiendo los campos baseType (tipo del vector si se esta
 representando un vector), tam (tamaño del vector si se esta representando un vector) e isConstant (booleano
 para saber si conocemos con certeza el valor de la expresión)
+
+
+
+Cabe resaltar que, tras compilar el programa invertir_pgm, el programa ensamblador no encuentra la etiqueta L0, siendo que si esta presente.
+
+Ensamblando invertir_pgm.pcode...
+Syntax error in line 88, col 6:
+  SRF
+syntax error
+La etiqueta L0 de la instruccion 0 no pudo ser resuelta!!!
+
+Creemos que es un error del programa proporcionado 'ensamblador', ya que con ningun otro programa falla.
