@@ -490,6 +490,7 @@ Symbol variable(Symbol.Types tipo) :
 	Token nombre;
 	Token dim = null;
 	Symbol s;
+	CodeBlock c = new CodeBlock();
 }
 {
 	nombre = <tID> (<tCOPEN> dim = <tNUM> <tCCLOSE>)?
@@ -506,7 +507,14 @@ Symbol variable(Symbol.Types tipo) :
 		}
 		catch(AlreadyDefinedSymbolException e){
 			errorSem.deteccion(e,nombre);
-		}	
+		}
+		
+		c.addComment("Declaracion variable "+nombre.image+": "+s);
+		try {
+			pcode.write(c.toString());
+		} catch (Exception e) {
+			System.err.println(e);
+		}
 		
 		return s;
 	}
@@ -518,6 +526,13 @@ Symbol variable(Symbol.Types tipo) :
 			s.dir = CGU.memorySpaces[f.nivel]+3;
 			CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
 			s.nivel = f.nivel;
+			
+			c.addComment("Declaracion variable "+nombre.image+": "+s);
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
 			try{
 				tabla.insertSymbol(s);
 			}
@@ -532,6 +547,13 @@ Symbol variable(Symbol.Types tipo) :
 			s.dir = CGU.memorySpaces[f.nivel]+3;
 			CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
 			s.nivel = f.nivel;
+			
+			c.addComment("Declaracion variable "+nombre.image+": "+s);
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
 			try{
 				tabla.insertSymbol(s);
 			}
@@ -547,6 +569,13 @@ Symbol variable(Symbol.Types tipo) :
 			s.dir = CGU.memorySpaces[f.nivel]+3;
 			CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
 			s.nivel = f.nivel;
+			
+			c.addComment("Declaracion variable "+nombre.image+": "+s);
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
 			try{
 				tabla.insertSymbol(s);
 			}
