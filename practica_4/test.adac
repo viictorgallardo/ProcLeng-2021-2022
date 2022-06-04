@@ -1,4 +1,0 @@
-procedure qrEncode is
-begin
-    put_line("hola");
-end
