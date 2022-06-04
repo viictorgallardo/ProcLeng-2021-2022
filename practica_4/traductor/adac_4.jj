@@ -390,7 +390,9 @@ Attributes inst_int2char() :
 		if(output.type != Symbol.Types.INT) {
 			errorSem.deteccion(new TypeErrorException(),temp,Symbol.Types.INT);
 		}
-		return new Attributes((char)(output.valInt));
+		output.type = Symbol.Types.CHAR;
+		output.valChar = (char)output.valInt;
+		return output;
 	}
 }
 
@@ -406,7 +408,9 @@ Attributes inst_char2int() :
 		if(output.type != Symbol.Types.CHAR) {
 			errorSem.deteccion(new TypeErrorException(),temp,Symbol.Types.CHAR);
 		}
-		return new Attributes(Character.getNumericValue(output.valChar));
+		output.type = Symbol.Types.INT;
+		output.valInt = Character.getNumericValue(output.valChar);
+		return output;
 	}
 }
 
@@ -778,7 +782,11 @@ void inst_declaracion_proc():
 					}
 					parametro.nivel = f.nivel;
 
-					tabla.insertSymbol(parametro);
+					try {
+						tabla.insertSymbol(parametro);
+					} catch(AlreadyDefinedSymbolException e){
+						errorSem.deteccion(e, nombre);
+					}
 				}
 			}
 
