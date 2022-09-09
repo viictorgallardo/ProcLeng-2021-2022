@@ -6,14 +6,15 @@ Marcos Garralaga Blasco (795936[@unizar.es])
 Victor Gallardo Sánchez (801159[@unizar.es])
 
 Consiste en implementar un compilador del lenguaje desarrollado por UNIZAR, AdaC. Este lenguaje es una mezcla entre el lenguaje Ada y C.
+
 A continuación se explican las características del lenguaje aceptado por el compilador. Cabe destacar que el compilador acepta el lenguaje de AdaC en su 
 totalidad.
 
-Se ha atacado hasta el nivel 4 (incluido) de la practica: 
+    Se ha atacado hasta el nivel 4 (incluido) de la practica: 
     El lenguaje permite el uso de parámetros escalares y de vectores, tanto por valor como por referencia 
     en procedimientos y funciones.
-        
-Otras carácteristicas del lenguaje aceptado que permite el compilador son:
+    
+    Otras carácteristicas del lenguaje aceptado que permite el compilador son:
     El lenguaje tiene un sistema de tipos rígido (no hay ninguna compatibilidad entre los tipos para
     ninguna operación):
         • Cuatro tipos de constantes literales: integer, boolean, character y string.
@@ -21,7 +22,7 @@ Otras carácteristicas del lenguaje aceptado que permite el compilador son:
         de índice entero cuya primera componente es la número 0.
         • Las variables simples, parámetros simples, y las componentes de variables y parámetros vectores 
         son asignables. Ni los procedimientos ni las funciones ni el programa son asignables.
-
+        
     Tambien existen otras herramientas:
         • Dos funciones para convertir un valor simple de un tipo a otro: int2char y char2int.
         • Comparacion de vectores: Dos vectores son del mismo tipo solamente si sus componentes son del
@@ -79,4 +80,7 @@ También se ha modificado ErrorSemantico para dar soporte a mostrar estos errore
 Además, se ha modificado la clase Attributes, añadiendo los campos baseType (tipo del vector si se esta
 representando un vector), tam (tamaño del vector si se esta representando un vector) e isConstant (booleano
 para saber si conocemos con certeza el valor de la expresión)
+
+Para compilar un archivo .adac se puede utilizar el script .compileAll, este generará un .pcode correspondiente a cada archivo .adac que haya en el directorio.
+El archivo compilado .pcode contiene la instrucciones en código P del programa compilado.
 
