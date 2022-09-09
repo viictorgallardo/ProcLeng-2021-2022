@@ -1,0 +1,4 @@
+for f in *.adac; do
+  echo "compiling $f"
+  java -jar dist/adac_4.jar "$f"
+done

@@ -1,0 +1,2101 @@
+//*****************************************************************
+// File:   adac_4.jj
+// Author: Marcos Garralaga (795936), Victor Gallardo (801159)
+// Date:   09/03/22
+// Coms:   Un tutorial sobre el análisis léxico con javacc
+//         https://javacc.github.io/javacc/tutorials/token-manager.html
+//*****************************************************************
+
+options {
+//  DEBUG_PARSER = true;
+}
+
+
+PARSER_BEGIN(adac_4)
+package traductor;
+
+
+import lib.errores.ErrorSemantico;
+import lib.attributes.Attributes;
+import lib.symbolTable.Symbol;
+import lib.symbolTable.SymbolArray;
+import lib.symbolTable.SymbolFunction;
+import lib.symbolTable.SymbolProcedure;
+import lib.symbolTable.SymbolBool;
+import lib.symbolTable.SymbolChar;
+import lib.symbolTable.SymbolInt;
+import lib.symbolTable.SymbolString;
+import lib.symbolTable.SymbolTable;
+import lib.symbolTable.exceptions.IndexOOBException;
+import lib.symbolTable.exceptions.AlreadyDefinedSymbolException;
+import lib.symbolTable.exceptions.SymbolNotFoundException;
+import lib.symbolTable.exceptions.InvocationException;
+import lib.symbolTable.exceptions.TypeErrorException;
+import lib.symbolTable.exceptions.IndexOOBException;
+import lib.symbolTable.exceptions.ContextException;
+import java.util.ArrayList;
+import lib.tools.codeGeneration.CodeBlock;
+import lib.tools.codeGeneration.CGUtils;
+import lib.tools.codeGeneration.CodeElement;
+import lib.tools.codeGeneration.PCodeInstruction.OpCode;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.StringBuilder;
+
+public class adac_4 {
+	static SymbolTable tabla = new SymbolTable();
+	static CGUtils CGU = new CGUtils();
+	static ErrorSemantico errorSem = new ErrorSemantico();
+	static File f;
+	static FileWriter pcode;
+	
+
+//FUNCION QUE CREA EL SIMBOLO CORRESPONDIENTE AL PARAMETRO DE UNA FUNCION.
+// DADO UN NOMBRE DIM, TIPO Y SI ES POR REF O POR VAL DEVUELVE EL SIMBOLO
+// Si se le indica tambien lo inserta en la tabla
+
+	public static Symbol crearParametro(Token nombre, Attributes dim, Symbol.Types tipo, 
+	boolean ref , boolean insertarEnTabla){
+		Symbol s = null;
+		Symbol f = tabla.peekStack();
+		
+		if(dim != null){
+			s = new SymbolArray(nombre.image,dim.valInt,tipo);
+			if(ref == true){
+				s.parClass = Symbol.ParameterClass.REF;
+			}
+			else{
+				s.parClass = Symbol.ParameterClass.VAL;
+			}
+			s.constant = false;
+			if(insertarEnTabla == true){
+				try{
+					s.dir = CGU.memorySpaces[f.nivel]+3;
+					CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
+					s.nivel = f.nivel;
+					tabla.insertSymbol(s);
+				}
+				catch(AlreadyDefinedSymbolException e){
+					errorSem.deteccion(e,nombre);
+				}	
+			}
+			return s;
+		}
+		switch (tipo) {
+			case INT:
+				s = new SymbolInt(nombre.image);
+				if(ref == true){
+					s.parClass = Symbol.ParameterClass.REF;
+				}
+				else{
+					s.parClass = Symbol.ParameterClass.VAL;
+				}
+				s.constant = false;
+				if(insertarEnTabla == true){
+					try{
+						s.dir = CGU.memorySpaces[f.nivel]+3;
+						CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
+						s.nivel = f.nivel;
+						tabla.insertSymbol(s);
+					}
+					catch(AlreadyDefinedSymbolException e){
+						errorSem.deteccion(e,nombre);
+					}	
+				}
+				return s;
+			
+			case BOOL:
+				s = new SymbolBool(nombre.image);
+				if(ref == true){
+					s.parClass = Symbol.ParameterClass.REF;
+				}
+				else{
+					s.parClass = Symbol.ParameterClass.VAL;
+				}
+				s.constant = false;
+				if(insertarEnTabla == true){
+					try{
+						s.dir = CGU.memorySpaces[f.nivel]+3;
+						CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
+						s.nivel = f.nivel;
+						tabla.insertSymbol(s);
+					}
+					catch(AlreadyDefinedSymbolException e){
+						errorSem.deteccion(e,nombre);
+					}	
+				}
+				return s;
+			
+			case CHAR:
+				s = new SymbolChar(nombre.image);
+				if(ref == true){
+					s.parClass = Symbol.ParameterClass.REF;
+				}
+				else{
+					s.parClass = Symbol.ParameterClass.VAL;
+				}
+				s.constant = false;
+				if(insertarEnTabla == true){
+					try{
+						s.dir = CGU.memorySpaces[f.nivel]+3;
+						CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
+						s.nivel = f.nivel;
+						tabla.insertSymbol(s);
+					}
+					catch(AlreadyDefinedSymbolException e){
+						errorSem.deteccion(e,nombre);
+					}	
+				}
+				return s;
+			default:
+				errorSem.deteccion(new TypeErrorException(), nombre, Symbol.Types.INT,Symbol.Types.CHAR,Symbol.Types.BOOL);
+				return null;
+		}
+		
+	}
+
+    public static void main(String[] args) {
+    	adac_4 parser;
+
+
+    	try {
+	    	if(args.length == 0) { //entrada desde stdin
+				parser = new adac_4(System.in);
+			}
+			else { //entrada desde fichero en args[0]
+	            parser = new adac_4(new java.io.FileInputStream(args[0])); 
+				f = new File(args[0].substring(0,args[0].lastIndexOf('.'))+".pcode");
+				try {
+					f.createNewFile();
+					pcode = new FileWriter(f);
+				} catch (Exception e) {
+					System.err.println(e);
+				}
+			}
+			parser.S(); //invoca símbolo inicial de la gramática
+			try {
+				pcode.close();
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+		catch (java.io.FileNotFoundException e) {
+			System.err.println ("Fichero " + args[0] + " no encontrado.");
+		}
+		catch (TokenMgrError e) {
+        	System.err.println("LEX_ERROR: " + e.getMessage());
+        }
+        catch (ParseException e) {
+        	System.err.println("SINT_ERROR: " + e.getMessage());
+        } 
+    }
+
+}
+PARSER_END(adac_4)
+//------------ descripción del AL
+SKIP :
+{
+    " "
+| 	"\t"
+| 	"\n"
+| 	"\r"
+|	<"--" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+}
+
+
+
+TOKEN : //-------palabras reservadas e identificadores
+{
+ 	< tBEGIN: "begin" >
+ 		{
+ 			//watchedToken.beginline;
+			//watchedToken.begincolumn;
+ 		}
+|	< tBOOL: "boolean" >
+|	< tCHAR: "character" >
+|	< tINT: "integer">
+|	< tIF:   "if" >
+|	< tELSE: "else">
+|	< tWHILE: "while" >
+|	< tPROCEDURE: "procedure" >
+|	< tFUNCTION: "function" >
+|	< tIS: "is" >
+|	< tRETURN: "return" > 
+|	< tDO: "do" >
+|	< tEND: "end" >
+|	< tTHEN: "then" >
+|	< tGET: "get" >
+|	< tSKIPLINE: "skip_line" >
+|	< tINT2CHAR: "int2char" >
+|	< tCHAR2INT: "char2int" >
+|	< tPUT : "put" >
+|	< tPUTLINE: "put_line">
+}
+
+
+TOKEN :  //-----caracteres , operadores y separadores
+{
+ 	< #LETTER: (["a"-"z","A"-"Z"]) >
+|	< #DIGIT: ["0"-"9"] >
+|	< tNUM: (<DIGIT>)+ >
+|	< tCAD: "\"" (~["\t","\n","\r","\""])* "\"" >
+|	< tCH: "\'" (~["\t","\n","\r"])? "\'" >
+|	< tSUMA: "+" > 
+|	< tRESTA: "-">
+|	< tMUL:	"*" >
+|	< tDIV: "div" >
+|	< tMOD: "mod">
+| 	< tCOMA: ",">
+|	< tPCOMA: ";" >
+|	< tMENOR: "<" >
+|	< tMAYOR: ">" >
+|	< tMENORI: "<=" >
+|	< tMAYORI: ">=" >
+|	< tIGUAL: "=" >
+|	< tDISTINTO: "<>" >
+|	< tASIGNACION: ":=">
+|	< tPOPEN: "(" >
+|	< tPCLOSE: ")" >
+|	< tCOPEN: "[">
+|	< tCCLOSE: "]">
+|	< tOR: "or">
+|	< tAND: "and" >
+|	< tNOT: "not" >
+|	< tFALSE: "false">
+|	< tTRUE: "true" >
+|	< tREF: "ref" >
+|	< tVAL: "val" >
+|	< tID: (<LETTER>)(("_")?(<LETTER>|<DIGIT>))*("_")? | ("_")((<LETTER>|<DIGIT>)("_")?)* >
+}
+
+SPECIAL_TOKEN:
+{
+	<ERROR:~[]> {
+		System.out.println("ERROR LEXICO: (<" + matchedToken.beginLine + ", " + matchedToken.beginColumn
+		+ ">): simbolo no reconocido: " + matchedToken.image ) ;
+	}
+}
+
+//GENERAL
+
+void S () : 
+{
+
+}
+{
+	(instruccion())+ < EOF > 
+	{
+		CodeBlock c = new CodeBlock();
+		c.addInst(OpCode.LVP);
+
+		try {
+			pcode.write(c.toString());
+		} catch (Exception e) {
+			System.err.println(e);
+		}
+	}
+}
+
+void instruccion () :
+{
+	Attributes output;
+	CodeBlock c;
+}
+{
+	try {
+		LOOKAHEAD(2)  c=inst_asig() <tPCOMA> 
+		{
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+	|	c = inst_get() <tPCOMA> 
+		{
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+	|	c = inst_skip_line() <tPCOMA> 
+		{
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+	|	inst_int2char() <tPCOMA> //La invocacion desnuda no genera codigo
+	|	inst_char2int() <tPCOMA> //La invocacion desnuda no genera codigo
+	|	c = inst_escribir() <tPCOMA>  
+		{
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+	| 	c = inst_escribir_linea() <tPCOMA> 
+		{
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+	|	inst_declaracion_metodo() //Ya gestiona el codigo dentro
+	|	inst_declaracion_variable() <tPCOMA> //No genera codigo
+	|	inst_while() //Ya gestiona el codigo dentro
+	| 	inst_seleccion()  //Ya gestiona el codigo dentro
+	|	LOOKAHEAD(2)  output=inst_invocacion() <tPCOMA> 
+		{
+			try {
+				output.code.encloseXMLTags("inst_invocacion");
+				pcode.write(output.code.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+	|	c=inst_return() <tPCOMA> 
+		{
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+	}
+	catch(ParseException e) {
+		System.err.println(e.toString());
+		Token t;
+		do {
+		  t = getNextToken();
+		}
+		while (t.kind != tPCOMA);
+	}
+}
+
+Attributes inst_int2char() :
+{
+	Attributes output;
+	Attributes a = new Attributes();
+	Token temp;
+}
+{
+	<tINT2CHAR> temp=<tPOPEN> output=expr(a) <tPCLOSE>
+	{
+		if(output.type != Symbol.Types.INT) {
+			errorSem.deteccion(new TypeErrorException(),temp,Symbol.Types.INT);
+		}
+		output.type = Symbol.Types.CHAR;
+		output.valChar = (char)output.valInt;
+		return output;
+	}
+}
+
+Attributes inst_char2int() :
+{
+	Attributes output;
+	Attributes a = new Attributes();
+	Token temp;
+}
+{
+	<tCHAR2INT> temp=<tPOPEN> output=expr(a) <tPCLOSE>
+	{
+		if(output.type != Symbol.Types.CHAR) {
+			errorSem.deteccion(new TypeErrorException(),temp,Symbol.Types.CHAR);
+		}
+		output.type = Symbol.Types.INT;
+		output.valInt = Character.getNumericValue(output.valChar);
+		return output;
+	}
+}
+
+CodeBlock inst_get() :
+{
+	Token temp;
+	ArrayList<Symbol> params = new ArrayList<Symbol>();
+	CodeBlock output = new CodeBlock();
+}
+{
+	<tGET> temp=<tPOPEN> params = list_asignables(temp) <tPCLOSE> 
+	{
+		Symbol f = tabla.peekStack();
+
+		for (Symbol s: params) {
+			output.addInst(OpCode.SRF,f.nivel+1-s.nivel,(int)s.dir);
+			if (s.parClass == Symbol.ParameterClass.REF){
+				output.addInst(OpCode.DRF);
+			}
+			if (s.type == Symbol.Types.CHAR) {
+				output.addInst(OpCode.RD,0);
+			}
+			else {
+				output.addInst(OpCode.RD,1);
+			}
+		}
+		//leer de la entrada (apilar en la pila)
+		output.encloseXMLTags("inst_get");
+		return output;
+	}
+}
+
+CodeBlock inst_skip_line() :
+{
+	CodeBlock output = new CodeBlock();
+	String label = "";
+}
+{
+	<tSKIPLINE> <tPOPEN> <tPCLOSE>
+	{
+		label = CGU.newLabel();
+		output.addLabel(label);
+		Symbol f = tabla.peekStack();
+		output.addInst(OpCode.SRF, 0, CGU.memorySpaces[f.nivel]+3);
+		output.addInst(OpCode.RD);
+		output.addInst(OpCode.SRF, 0, CGU.memorySpaces[f.nivel]+3);
+		output.addInst(OpCode.DRF);
+		output.addInst(OpCode.STC, 10);
+		output.addInst(OpCode.EQ);
+		output.addInst(OpCode.JMF, label);
+
+		output.encloseXMLTags("inst_skip_line");
+
+		return output;
+	}
+}
+
+
+
+
+//DECLARACION VARIABLES
+
+void inst_declaracion_variable() :
+{
+	Symbol.Types tipo = Symbol.Types.UNDEFINED;
+
+}
+{
+	tipo = tipos() variable(tipo) (<tCOMA> variable(tipo))* 
+	{
+		
+	}
+}
+
+Symbol variable(Symbol.Types tipo) :
+{
+	Token nombre;
+	Token dim = null;
+	Symbol s;
+	CodeBlock c = new CodeBlock();
+}
+{
+	nombre = <tID> (<tCOPEN> dim = <tNUM> <tCCLOSE>)?
+	{
+	Symbol f = tabla.peekStack();
+	if(dim != null){
+		s = new SymbolArray(nombre.image,Integer.parseInt(dim.image),tipo);
+		s.constant = false;
+		s.dir = CGU.memorySpaces[f.nivel]+3;
+		CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+Integer.parseInt(dim.image);
+		s.nivel = f.nivel;
+		try {
+			tabla.insertSymbol(s);
+		}
+		catch(AlreadyDefinedSymbolException e){
+			errorSem.deteccion(e,nombre);
+		}
+		
+		c.addComment("Declaracion variable "+nombre.image+": "+s);
+		try {
+			pcode.write(c.toString());
+		} catch (Exception e) {
+			System.err.println(e);
+		}
+		
+		return s;
+	}
+	//Se accede al último nivel en el que estamos
+	switch (tipo) {
+		case INT:
+			s = new SymbolInt(nombre.image);
+			s.constant = false;
+			s.dir = CGU.memorySpaces[f.nivel]+3;
+			CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
+			s.nivel = f.nivel;
+			
+			c.addComment("Declaracion variable "+nombre.image+": "+s);
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+			try{
+				tabla.insertSymbol(s);
+			}
+			catch(AlreadyDefinedSymbolException e){
+				errorSem.deteccion(e,nombre);
+			}	
+			
+			return s;
+		case BOOL:
+			s = new SymbolBool(nombre.image);
+			s.constant = false;
+			s.dir = CGU.memorySpaces[f.nivel]+3;
+			CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
+			s.nivel = f.nivel;
+			
+			c.addComment("Declaracion variable "+nombre.image+": "+s);
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+			try{
+				tabla.insertSymbol(s);
+			}
+			catch(AlreadyDefinedSymbolException e){
+				errorSem.deteccion(e,nombre);
+			}	
+			
+			return s;
+		
+		case CHAR:
+			s = new SymbolChar(nombre.image);
+			s.constant = false;
+			s.dir = CGU.memorySpaces[f.nivel]+3;
+			CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
+			s.nivel = f.nivel;
+			
+			c.addComment("Declaracion variable "+nombre.image+": "+s);
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+			try{
+				tabla.insertSymbol(s);
+			}
+			catch(AlreadyDefinedSymbolException e){
+				errorSem.deteccion(e,nombre);
+			}	
+			
+			return s;
+		default:
+			errorSem.deteccion(new TypeErrorException(), nombre, Symbol.Types.INT,Symbol.Types.CHAR,Symbol.Types.BOOL);
+			return null; //TODO: No poner null aqui
+			break;
+		}
+		
+	
+	}
+}
+
+//DECLARACION METODO
+
+void inst_declaracion_metodo() :
+{
+	
+}
+{
+	(inst_declaracion_proc() | inst_declaracion_func())
+}
+
+
+
+CodeBlock inst_return() :
+{
+	Attributes a = new Attributes();
+	Attributes a1;
+	Token temp;
+	CodeBlock output = new CodeBlock();
+}
+{
+	temp=<tRETURN> a1=expr(a)
+	{
+		Symbol r = tabla.peekStack();
+		SymbolFunction d;
+		if(r.type != Symbol.Types.FUNCTION) {
+			errorSem.deteccion(new ContextException(), temp);
+			return output;
+		}
+		else {
+			d = ((SymbolFunction)r);
+			if(a1.type != d.returnType) {
+				errorSem.deteccion(new TypeErrorException(), temp, d.returnType);	
+			}
+			
+			output.addBlock(a1.code);
+			output.addInst(OpCode.CSF);
+			output.encloseXMLTags("inst_return");
+			return output;
+		}
+	}
+}
+
+void declaracion_variables() :
+{
+	
+}
+{
+	((inst_declaracion_variable() <tPCOMA>) | inst_declaracion_metodo())*
+}
+
+//FUNCION
+void inst_declaracion_func() :
+{
+	Token nombre = null;
+	Symbol.Types tipo = Symbol.Types.UNDEFINED;
+	ArrayList<Symbol> argums = null;
+	Symbol parametro = null;
+	SymbolFunction s = null;
+	CodeBlock c = new CodeBlock();
+	String etiquetainicio = "";
+	int aRecuperar = 0;
+}
+{
+	<tFUNCTION> tipo = tipos() nombre = <tID> (argums = argumentos())?
+	{
+		try{
+			s = new SymbolFunction(nombre.image, argums,tipo); //TODO numero de parametros
+			s.constant = true;
+			s.etiqueta = CGU.newLabel();
+
+			tabla.insertSymbol(s);
+			tabla.insertStack(s);
+			tabla.insertBlock();
+
+			if(argums.size() != 0){
+				Symbol f = tabla.peekStack();
+				for(int i=argums.size()-1; i>=0; i--){
+					parametro = argums.get(i);
+					parametro.dir = CGU.memorySpaces[f.nivel]+3;
+					if(parametro.type == Symbol.Types.ARRAY) {
+						SymbolArray arr = ((SymbolArray)parametro);
+						if(parametro.parClass == Symbol.ParameterClass.REF) {
+							CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
+							aRecuperar++;
+						}
+						else {
+							CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+(arr.maxInd - arr.minInd)+1;
+							aRecuperar += (arr.maxInd - arr.minInd)+1;
+						}
+					}
+					else {
+						CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
+						aRecuperar++;
+					}
+					parametro.nivel = f.nivel;
+					
+					tabla.insertSymbol(parametro);
+				}
+			}
+			
+			if(s.nivel == 0) {
+				c = new CodeBlock();
+				c.addInst(OpCode.ENP,s.etiqueta);
+
+				try {
+					pcode.write(c.toString());
+				} catch (Exception e) {
+					System.err.println(e);
+				}
+			}
+			else {
+				Symbol f = tabla.peekStack();
+				c = new CodeBlock();
+				c.addLabel(s.etiqueta);
+				//Recuperamos los parametros de un procedimiento
+				for(int i=aRecuperar-1; i>=0 ; i--) {
+					c.addComment("Recuperar parametro "+i);
+					c.addInst(OpCode.SRF,0,i+3);
+					c.addInst(OpCode.ASGI);
+				}
+				etiquetainicio = CGU.newLabel();
+				c.addInst(OpCode.JMP, etiquetainicio);
+
+				c.encloseXMLTags("inst_declaracion_func");
+
+				try {
+					pcode.write(c.toString());
+				} catch (Exception e) {
+					System.err.println(e);
+				}
+			}
+			
+		}catch(AlreadyDefinedSymbolException e){
+			errorSem.deteccion(e, nombre );
+		}
+	}
+	<tIS> declaracion_variables() <tBEGIN>
+	{
+		c = new CodeBlock();
+		if(s.nivel == 0) {
+			c.addLabel(s.etiqueta);
+		}
+		else {
+			c.addLabel(etiquetainicio);
+		}
+
+		try {
+			pcode.write(c.toString());
+		} catch (Exception e) {
+			System.err.println(e);
+		}
+	}
+	(instruccion())* <tEND>
+	{
+		if(s.nivel != 0) {
+			c = new CodeBlock();
+			c.addComment("End function");
+			c.addInst(OpCode.CSF);
+			
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+
+		Symbol f = tabla.peekStack();
+		CGU.memorySpaces[f.nivel] = 0;
+		tabla.removeBlock();
+		tabla.removeStack();
+	}
+}
+//PROCEDIMIENTO
+void inst_declaracion_proc():
+{
+	Token nombre = null;
+	ArrayList<Symbol> argums = new ArrayList<Symbol>();
+	Symbol parametro = null;
+	SymbolProcedure s = null;
+	CodeBlock c = new CodeBlock();
+	String etiquetainicio = "";
+	int aRecuperar = 0;
+}
+{
+	<tPROCEDURE> nombre = <tID> (argums = argumentos())?
+	{
+		try{
+			s = new SymbolProcedure(nombre.image, argums); //TODO numero de parametros
+			s.constant = true;
+			s.etiqueta = CGU.newLabel();
+			
+			tabla.insertSymbol(s);
+			tabla.insertStack(s);
+			tabla.insertBlock();
+			
+			if(argums.size() != 0) {
+				Symbol f = tabla.peekStack();
+				for(int i=argums.size()-1; i>=0; i--){
+					parametro = argums.get(i);
+					parametro.dir = CGU.memorySpaces[f.nivel]+3;
+					if(parametro.type == Symbol.Types.ARRAY) {
+						SymbolArray arr = ((SymbolArray)parametro);
+						if(parametro.parClass == Symbol.ParameterClass.REF) {
+							CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
+							aRecuperar++;
+						}
+						else {
+							CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+(arr.maxInd - arr.minInd)+1;
+							aRecuperar += (arr.maxInd - arr.minInd)+1;
+						}
+					}
+					else {
+						aRecuperar++;
+						CGU.memorySpaces[f.nivel] = CGU.memorySpaces[f.nivel]+1;
+					}
+					parametro.nivel = f.nivel;
+
+					try {
+						tabla.insertSymbol(parametro);
+					} catch(AlreadyDefinedSymbolException e){
+						errorSem.deteccion(e, nombre);
+					}
+				}
+			}
+
+			if(s.nivel == 0) {
+				c = new CodeBlock();
+				c.addInst(OpCode.ENP,s.etiqueta);
+
+				try {
+					pcode.write(c.toString());
+				} catch (Exception e) {
+					System.err.println(e);
+				}
+			}
+			else {
+				c = new CodeBlock();
+				c.addLabel(s.etiqueta);
+				//Recuperamos los parametros de un procedimiento
+				for(int i=aRecuperar-1; i>=0 ; i--) {
+					c.addComment("Recuperar parametro "+i);
+					c.addInst(OpCode.SRF,0,i+3);
+					c.addInst(OpCode.ASGI);
+				}
+				etiquetainicio = CGU.newLabel();
+				c.addInst(OpCode.JMP, etiquetainicio);
+
+				c.encloseXMLTags("inst_declaracion_proc");
+
+				try {
+					pcode.write(c.toString());
+				} catch (Exception e) {
+					System.err.println(e);
+				}
+			}
+
+		}catch(AlreadyDefinedSymbolException e){
+			errorSem.deteccion(e, nombre );
+		}
+	}
+	<tIS> declaracion_variables() <tBEGIN>
+	{
+		c = new CodeBlock();
+		if(s.nivel == 0) {
+			c.addLabel(s.etiqueta);
+		}
+		else {
+			c.addLabel(etiquetainicio);
+		}
+
+		try {
+			pcode.write(c.toString());
+		} catch (Exception e) {
+			System.err.println(e);
+		}
+	}
+	(instruccion())* <tEND>
+	{
+		if(s.nivel != 0) {
+			c = new CodeBlock();
+			c.addComment("End procedure");
+			c.addInst(OpCode.CSF);
+
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+
+		Symbol f = tabla.peekStack();
+		CGU.memorySpaces[f.nivel] = 0;
+		tabla.removeBlock();
+		tabla.removeStack();
+	}
+}
+
+
+CodeBlock inst_escribir():
+{
+	ArrayList<Attributes> lista = new ArrayList<Attributes>();
+	Token temp;
+	CodeBlock output = new CodeBlock();
+}
+{
+	<tPUT> temp=<tPOPEN> lista=list_expr() <tPCLOSE>
+	{
+		int i = 0;
+		for(Attributes a: lista) {
+			if(a.type!=Symbol.Types.INT && a.type!=Symbol.Types.BOOL && a.type!=Symbol.Types.CHAR && a.type!=Symbol.Types.STRING) {
+				errorSem.deteccion(new TypeErrorException(), temp, Symbol.Types.INT,Symbol.Types.BOOL,Symbol.Types.CHAR,Symbol.Types.STRING);
+			}
+			if(a.type == Symbol.Types.CHAR) {
+				output.addComment("Variable "+i+", tipo char");
+				output.addBlock(a.code);
+				output.addInst(OpCode.WRT,0);
+				// Se añade al bloque para escribirlo posteriormente
+			}
+			else if (a.type == Symbol.Types.STRING) {
+				output.addComment("Variable "+i+", tipo string");
+				for (CodeElement inst: a.code.code) {
+					output.code.add(inst);
+					output.addInst(OpCode.WRT,0);
+				}
+			}
+			else {
+				output.addComment("Variable "+i+", tipo int");
+				output.addBlock(a.code);
+				output.addInst(OpCode.WRT,1);
+			}
+			i = i+1;
+		}
+		output.encloseXMLTags("inst_put");
+
+		return output;
+	}
+}
+
+CodeBlock inst_escribir_linea():
+{
+	ArrayList<Attributes> lista = new ArrayList<Attributes>();
+	Token temp;
+	CodeBlock output = new CodeBlock();
+}
+{
+	<tPUTLINE> temp=<tPOPEN> (lista=list_expr())? <tPCLOSE>
+	{
+		int i = 0;
+		for(Attributes a: lista) {
+			if(a.type!=Symbol.Types.INT && a.type!=Symbol.Types.BOOL && a.type!=Symbol.Types.CHAR && a.type!=Symbol.Types.STRING) {
+				errorSem.deteccion(new TypeErrorException(), temp, Symbol.Types.INT,Symbol.Types.BOOL,Symbol.Types.CHAR,Symbol.Types.STRING);
+			}
+			if(a.type == Symbol.Types.CHAR) {
+				output.addComment("Variable "+i+", tipo char");
+				output.addBlock(a.code);
+				output.addInst(OpCode.WRT,0);
+				// Se añade al bloque para escribirlo posteriormente
+			}
+			else if (a.type == Symbol.Types.STRING) {
+				output.addComment("Variable "+i+", tipo string");
+				for (CodeElement inst: a.code.code) {
+					output.code.add(inst);
+					output.addInst(OpCode.WRT,0);
+				}
+			}
+			else {
+				output.addComment("Variable "+i+", tipo int");
+				output.addBlock(a.code);
+				output.addInst(OpCode.WRT,1);
+			}
+			i = i+1;
+		}
+		output.addComment("Escribir \\n");
+		output.addInst(OpCode.STC,10);
+		output.addInst(OpCode.WRT,0);
+		output.encloseXMLTags("inst_put_line");
+		
+		return output;
+	}
+}
+
+void inst_seleccion():
+{
+	Attributes a = new Attributes();
+	Attributes condition = new Attributes();
+	CodeBlock c = new CodeBlock();
+	Token cond;
+	String label = CGU.newLabel();
+	String labelFin = CGU.newLabel();
+}
+{
+	try {
+		cond = <tIF> condition = expr(a) <tTHEN> 
+		{
+			if(condition.type != Symbol.Types.BOOL){
+				errorSem.deteccion(new TypeErrorException(),cond,Symbol.Types.BOOL);
+			}
+			c = new CodeBlock();
+
+			c.addComment("Condicion");
+			c.addBlock(condition.code);
+			c.addInst(OpCode.JMF, label);
+
+			c.encloseXMLTags("inst_if");
+
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+		(instruccion())* 
+		{
+			c = new CodeBlock();
+
+			c.addComment("Saltar al final del if(+else)");
+			c.addInst(OpCode.JMP, labelFin);
+			c.addLabel(label);
+
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+		masIf() <tEND>
+		{
+			c = new CodeBlock();
+
+			c.addLabel(labelFin);
+
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+	}
+	catch(ParseException e) {
+		System.err.println(e.toString());
+		Token t;
+		do {
+		  t = getNextToken();
+		}
+		while (t.kind != tEND);
+	}
+}
+
+void masIf() :
+{
+	
+}
+{
+	(<tELSE> (instruccion())*)?
+	
+	
+}
+// Regla relativa a los argumentos que se le pasa a una función
+ArrayList<Symbol> argumentos() :
+{
+	ArrayList<Symbol> parametros = new ArrayList<Symbol>();
+}
+{
+	<tPOPEN> (parametros = list_params())? <tPCLOSE>
+	{
+		//System.out.println(parametros.toString());
+		return parametros;
+	}
+}
+//Función que junta todos los parametros de una declaración y los devuelve en una lista.
+ArrayList<Symbol> list_params():
+{
+	ArrayList<Symbol> primer_parametro = new ArrayList<Symbol>();
+	ArrayList<Symbol> resto_parametros = new ArrayList<Symbol>();
+}
+{
+	primer_parametro = parametro() resto_parametros=list_params_plus()
+	{
+		primer_parametro.addAll(resto_parametros);
+		return primer_parametro;
+	}
+}
+
+ArrayList<Symbol> list_params_plus():
+{
+	ArrayList<Symbol> parametro = new ArrayList<Symbol>();
+	ArrayList<Symbol> resto_parametros = new ArrayList<Symbol>();
+}
+{
+	<tPCOMA>  parametro = parametro() resto_parametros=list_params_plus()
+	{
+		parametro.addAll(resto_parametros);
+		return parametro;
+	}
+|	{
+		return parametro;
+	}
+}
+
+
+
+
+
+
+// Funcion que devuelve una lista de simbolos que corresponden a una parte de los parametros de 
+// un método. Esta función devuelve un único parámetro
+// o junta varios parametros declarados del tipo ref/val i,j,k...
+ArrayList<Symbol> parametro():
+{
+	ArrayList<Symbol> lista_parametros = new ArrayList<Symbol>();
+	Attributes a = null;
+
+	ArrayList<Symbol> resto_parametros = new ArrayList<Symbol>();
+
+	Token nombre = null;
+	Attributes dim = null;
+	Symbol s = null;
+	Symbol.Types tipo;
+}
+{
+	<tREF> tipo = tipos() nombre = <tID> (<tCOPEN> dim = expr(a) <tCCLOSE>)? 
+	{
+		//Creo la lista con el parametro y el resto de parametros en caso de que haya mas parametros
+
+		//Para ello primero creo el simbolo del parametro. IGUAL QUE DEFINICION DE VARIABLES
+		
+		s = crearParametro(nombre,dim,tipo,true,false);
+		lista_parametros.add(s); // se anade el parametro
+
+
+	}
+	resto_parametros = masParametros(tipo,true)
+	{
+		lista_parametros.addAll(resto_parametros);
+		return lista_parametros;
+	}
+
+|	<tVAL> tipo = tipos() nombre = <tID> (<tCOPEN> dim = expr(a) <tCCLOSE>)? 
+	{
+		s = crearParametro(nombre,dim,tipo,false,false);
+		lista_parametros.add(s); // se anade el parametro
+	}
+
+
+	resto_parametros = masParametros(tipo,false)
+	{
+		lista_parametros.addAll(resto_parametros);
+		return lista_parametros;
+	}
+}
+
+
+ArrayList<Symbol> masParametros(Symbol.Types tipo, boolean ref) :
+{
+	ArrayList<Symbol> resto_parametros = new ArrayList<Symbol>();
+	ArrayList<Symbol> otros_parametros = new ArrayList<Symbol>();
+	Token nombre = null;
+	Attributes dim = null;
+	Attributes a = null;
+	Symbol s = null;
+}
+{
+	<tCOMA> nombre = <tID> (<tCOPEN> dim = expr(a) <tCCLOSE>)? otros_parametros = masParametros(tipo,ref)
+	{
+		// Crea un (o varios) parametro tanto por referencia como por valor( según se le haya pasado), y 
+		// lo devuelve en una lista.
+		s = crearParametro(nombre,dim,tipo,ref,false);
+		resto_parametros.add(s); // se anade el parametro
+		resto_parametros.addAll(otros_parametros);
+		return resto_parametros;
+
+	}
+|	{
+		return resto_parametros;
+	}
+}
+
+
+Symbol.Types tipos():
+{
+
+}
+{
+	<tINT>
+	{
+	return Symbol.Types.INT;
+	}
+| 	<tCHAR>
+	{
+	return Symbol.Types.CHAR;
+	}
+| 	<tBOOL>
+	{
+	return Symbol.Types.BOOL;
+	}
+}
+
+Attributes inst_invocacion() :
+{
+	Token t1, temp;
+	ArrayList<Attributes> params = new ArrayList<Attributes>();
+}
+{
+	t1=<tID> temp=<tPOPEN> (params=list_expr())? <tPCLOSE>
+	{
+		// System.out.println("Invocacion con: ");
+		// for (Attributes a : params) {
+		// 	System.out.print("    "+a.toString());
+	 	// }
+		// System.out.println();
+
+		//Obtener simbolo
+		try {
+			Symbol v = tabla.getSymbol(t1.image);
+			//Comprobar que el simbolo es una funcion
+			if (v.type == Symbol.Types.FUNCTION) {
+				SymbolFunction f = ((SymbolFunction)v);
+				Symbol mainProg = tabla.getLastStack();
+				if ((mainProg.type==Symbol.Types.FUNCTION) && (((SymbolFunction)mainProg)==f)) {
+					errorSem.deteccion(new ContextException(),t1);
+					//ERROR:
+					return new Attributes(f.returnType,Symbol.ParameterClass.NONE);
+				}
+				if(params.size()!=f.parList.size()) {
+					errorSem.deteccion(new InvocationException(), t1, "Nº de parametros incorrecto");
+				}
+				else {
+					for (int i = 0; i<params.size(); i++) {
+						if(params.get(i).type != f.parList.get(i).type) {
+							errorSem.deteccion(new TypeErrorException(), temp, f.parList.get(i).type);
+						}
+						if(params.get(i).type==Symbol.Types.ARRAY && f.parList.get(i).type==Symbol.Types.ARRAY) {
+							if ((params.get(i).tam != ((SymbolArray)f.parList.get(i)).maxInd-((SymbolArray)f.parList.get(i)).minInd)) {
+								errorSem.deteccion(new InvocationException(), t1, "El vector no tiene el tamano correcto");
+							}
+							if(params.get(i).baseType != ((SymbolArray)f.parList.get(i)).baseType) {
+								errorSem.deteccion(new InvocationException(), t1, "El vector no tiene el mismo tipo");
+							}
+						}
+						// Si el parametro declarado es por ref y el segundo no es asignable, salta error.
+						if((f.parList.get(i).parClass == Symbol.ParameterClass.REF) && (params.get(i).parClass!=Symbol.ParameterClass.REF)) {
+							errorSem.deteccion(new InvocationException(), t1, "La clase del parametro es incorrecta");
+						}
+					}
+				}
+				Attributes output = new Attributes(f.returnType,Symbol.ParameterClass.NONE);
+
+				//Apilar parametros
+				for (int i = params.size()-1; i>=0; i--) {
+					output.code.addComment("Apilar parametro "+i);
+					if(f.parList.get(i).parClass == Symbol.ParameterClass.REF) {
+						Symbol referencia = params.get(i).miSimbolo;
+						Symbol p = tabla.peekStack();
+						output.code.addInst(OpCode.SRF,p.nivel+1-referencia.nivel,(int)referencia.dir);
+						if(referencia.parClass == Symbol.ParameterClass.REF) {
+							output.code.addInst(OpCode.DRF);
+						}
+					}
+					else {
+						if(f.parList.get(i).type == Symbol.Types.ARRAY) {
+							SymbolArray referencia = ((SymbolArray) params.get(i).miSimbolo);
+							Symbol p = tabla.peekStack();
+							//Apilar todos los elementos
+							for (int k=0; k<=referencia.maxInd-referencia.minInd; k++) {
+								output.code.addInst(OpCode.SRF,p.nivel+1-referencia.nivel,((int)referencia.dir));
+								if(referencia.parClass == Symbol.ParameterClass.REF) {
+									output.code.addInst(OpCode.DRF);
+								}
+								output.code.addInst(OpCode.STC, k);
+								output.code.addInst(OpCode.PLUS);
+								output.code.addInst(OpCode.DRF);
+							}
+						}
+						else {
+							output.code.addBlock(params.get(i).code);
+						}
+					}
+				}
+				//Llamar OSF
+				Symbol p = tabla.peekStack();
+				output.code.addComment("Invocacion");
+				output.code.addOSFInst(CGU.memorySpaces[p.nivel]+3,p.nivel+1-f.nivel,f.etiqueta);
+
+				return output;
+			}
+			else if (v.type == Symbol.Types.PROCEDURE) {
+				SymbolProcedure f = ((SymbolProcedure)v);
+				Symbol mainProg = tabla.getLastStack();
+				if ((mainProg.type==Symbol.Types.PROCEDURE) && (((SymbolProcedure)mainProg)==f)) {
+					errorSem.deteccion(new ContextException(),t1);
+					return new Attributes(Symbol.Types.UNDEFINED,Symbol.ParameterClass.NONE);
+				}
+				if(params.size()!=f.parList.size()) {
+					errorSem.deteccion(new InvocationException(), t1, "Nº de parametros incorrecto");
+				}
+				else {
+					for (int i = 0; i<params.size(); i++) {
+						if(params.get(i).type != f.parList.get(i).type) {
+							errorSem.deteccion(new TypeErrorException(), temp, f.parList.get(i).type);
+						}
+						if(params.get(i).type==Symbol.Types.ARRAY && f.parList.get(i).type==Symbol.Types.ARRAY) {
+							if ((params.get(i).tam != ((SymbolArray)f.parList.get(i)).maxInd-((SymbolArray)f.parList.get(i)).minInd)) {
+								errorSem.deteccion(new InvocationException(), t1, "El vector no tiene el tamano correcto");
+							}
+							if(params.get(i).baseType != ((SymbolArray)f.parList.get(i)).baseType) {
+								errorSem.deteccion(new InvocationException(), t1, "El vector no tiene el mismo tipo");
+							}
+						}
+						// Si el parametro declarado es por ref y el segundo no es asignable, salta error.
+						if((f.parList.get(i).parClass == Symbol.ParameterClass.REF) && (params.get(i).parClass!=Symbol.ParameterClass.REF)) {
+							errorSem.deteccion(new InvocationException(), t1, "La clase del parametro es incorrecta");
+						}
+					}
+				}
+				Attributes output = new Attributes(Symbol.Types.UNDEFINED,Symbol.ParameterClass.NONE);
+
+				
+				//Apilar parametros
+				for (int i = params.size()-1; i>=0; i--) {
+					output.code.addComment("Apilar parametro "+i);
+					if(f.parList.get(i).parClass == Symbol.ParameterClass.REF) {
+						Symbol referencia = params.get(i).miSimbolo;
+						Symbol p = tabla.peekStack();
+						output.code.addInst(OpCode.SRF,p.nivel+1-referencia.nivel,(int)referencia.dir);
+						if(referencia.parClass == Symbol.ParameterClass.REF) {
+							output.code.addInst(OpCode.DRF);
+						}
+					}
+					else {
+						if(f.parList.get(i).type == Symbol.Types.ARRAY) {
+							SymbolArray referencia = ((SymbolArray) params.get(i).miSimbolo);
+							Symbol p = tabla.peekStack();
+							//Apilar todos los elementos
+							for (int k=0; k<=referencia.maxInd-referencia.minInd; k++) {
+								output.code.addInst(OpCode.SRF,p.nivel+1-referencia.nivel,((int)referencia.dir));
+								if(referencia.parClass == Symbol.ParameterClass.REF) {
+									output.code.addInst(OpCode.DRF);
+								}
+								output.code.addInst(OpCode.STC, k);
+								output.code.addInst(OpCode.PLUS);
+								output.code.addInst(OpCode.DRF);
+							}
+						}
+						else {
+							output.code.addBlock(params.get(i).code);
+						}
+					}
+				}
+				//Llamar OSF
+				Symbol p = tabla.peekStack();
+				output.code.addComment("Invocacion");
+				output.code.addOSFInst(CGU.memorySpaces[p.nivel]+3,p.nivel+1-f.nivel,f.etiqueta);
+				return output;
+			}
+			else {
+				errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.FUNCTION, Symbol.Types.PROCEDURE);
+				//ERROR
+				return new Attributes();
+			}
+		}
+		catch(SymbolNotFoundException e) {
+			errorSem.deteccion(e, t1);
+		}
+	}
+}
+
+ArrayList<Symbol> list_asignables(Token temp) :
+{
+	Symbol a1;
+	ArrayList<Symbol> output = new ArrayList<Symbol>();
+}
+{
+	a1=asignable() output=list_asignables_plus()
+	{
+		if(a1.type!=Symbol.Types.CHAR && a1.type!=Symbol.Types.INT && (a1.type == Symbol.Types.ARRAY && ((SymbolArray)a1).baseType!=Symbol.Types.CHAR && ((SymbolArray)a1).baseType!=Symbol.Types.INT)) {
+			errorSem.deteccion(new TypeErrorException(), temp, Symbol.Types.INT, Symbol.Types.CHAR);
+		}
+		output.add(a1);
+		return output;
+	}
+}
+
+ArrayList<Symbol> list_asignables_plus() :
+{
+	Symbol a1;
+	Token temp;
+	ArrayList<Symbol> output = new ArrayList<Symbol>();
+}
+{
+	temp=<tCOMA> a1=asignable() output=list_asignables_plus()
+	{
+		if(a1.type!=Symbol.Types.CHAR && a1.type!=Symbol.Types.INT && (a1.type==Symbol.Types.ARRAY && ((SymbolArray)a1).baseType != Symbol.Types.INT && ((SymbolArray)a1).baseType != Symbol.Types.CHAR)) {
+			errorSem.deteccion(new TypeErrorException(), temp, Symbol.Types.INT, Symbol.Types.CHAR);
+		}
+		output.add(a1);
+		return output;
+	}
+|	{ return output; }
+}
+
+ArrayList<Attributes> list_expr() :
+{
+	Attributes a = new Attributes();
+	Attributes a1;
+	ArrayList<Attributes> other;
+}
+{
+	a1=expr(a) other=list_expr_plus()
+	{
+		other.add(0, a1);
+		return other;
+	}
+}
+
+ArrayList<Attributes> list_expr_plus() :
+{
+	Attributes a = new Attributes();
+	Attributes a1;
+	ArrayList<Attributes> other;
+}
+{
+	<tCOMA> a1=expr(a) other=list_expr_plus()
+	{
+		other.add(0, a1);
+		return other;
+	}
+|	
+	{
+		return new ArrayList<Attributes>();
+	}
+}
+
+//ASIGNACIONES
+
+CodeBlock inst_asig() :
+{
+	Symbol asig = null;
+	Attributes expr = null;
+	Attributes a = new Attributes();
+	Token temp;
+	CodeBlock output = new CodeBlock();
+}
+{
+	asig = asignable() temp=<tASIGNACION> expr=expr(a)
+	{
+		if(asig.constant){
+			System.err.println("Error: " + asig.name + "es una cte. usada como variable");
+		}
+		else {
+			Symbol f = tabla.peekStack();
+			output.addComment("Referencia a asignable");
+			
+			if ((asig.type != expr.type) && (asig.type != Symbol.Types.ARRAY)){ // SE COMPRUEBA QUE EL ASIGNABLE Y LA EXPRESION A ASIGNAR SEAN DEL MISMO TIPO
+				errorSem.deteccion(new TypeErrorException(), temp, asig.type);
+			}
+			else{
+				if(asig.type == Symbol.Types.ARRAY){
+					// Primero se genera la direccion del vector, luego se trata la expresion
+					// y se suma para acceder a la componente del vector.
+					output.addComment("Direccion de la componente 0 del vector");
+					output.addInst(OpCode.SRF,f.nivel+1-asig.nivel,(int)asig.dir);
+					if(asig.parClass == Symbol.ParameterClass.REF) {
+						output.addInst(OpCode.DRF);
+					}
+					output.addComment("Offset");
+					output.addBlock(((SymbolArray)asig).indice);
+					output.addInst(OpCode.PLUS);
+				}
+				else if(asig.type == Symbol.Types.INT){
+					SymbolInt s = (SymbolInt)asig;
+					s.value = expr.valInt;
+					output.addInst(OpCode.SRF, f.nivel+1-asig.nivel, (int)asig.dir);
+					if(asig.parClass == Symbol.ParameterClass.REF) {
+						output.addInst(OpCode.DRF);
+					}
+				}
+				else if(asig.type == Symbol.Types.CHAR){
+					SymbolChar s = (SymbolChar)asig;
+					s.value = expr.valChar;
+					output.addInst(OpCode.SRF, f.nivel+1-asig.nivel, (int)asig.dir);
+					if(asig.parClass == Symbol.ParameterClass.REF) {
+						output.addInst(OpCode.DRF);
+					}
+				}
+				else if(asig.type == Symbol.Types.BOOL){
+					SymbolBool s = (SymbolBool)asig;
+					s.value = expr.valBool;
+					output.addInst(OpCode.SRF, f.nivel+1-asig.nivel, (int)asig.dir);
+					if(asig.parClass == Symbol.ParameterClass.REF) {
+						output.addInst(OpCode.DRF);
+					}
+				}
+			}
+		}
+
+		
+		output.addComment("Valor a asignar");
+		output.addBlock(expr.code);
+		output.addComment("Asignacion");
+		output.addInst(OpCode.ASG);
+
+		output.encloseXMLTags("inst_asig");
+
+		return output;
+	}
+}
+
+
+// Si el asignable existe devuelve el asignable correspondiente de la tabla de simbolos, 
+// si no devuelve null.
+Symbol asignable() :
+{
+	Token nombre = null;
+	Symbol output = null;
+	Attributes expr = null;
+	Attributes a = new Attributes();
+}
+{
+	LOOKAHEAD(2)  nombre = <tID> <tCOPEN> expr = expr(a) <tCCLOSE>
+	{
+		try{
+			//buscamos el simbolo asignable en la tabla de simbolos
+			output = tabla.getSymbol(nombre.image);
+			// Se mira si el vector es de tipo array
+			if(output.type != Symbol.Types.ARRAY) {
+				errorSem.deteccion(new TypeErrorException(), nombre, Symbol.Types.ARRAY);
+			}
+			if(expr.type != Symbol.Types.INT){ // se mira si no se indexa con entero
+				errorSem.deteccion(new TypeErrorException(), nombre, Symbol.Types.INT);
+			}
+			else{
+				if(expr.valInt < ((SymbolArray)output).minInd || expr.valInt > ((SymbolArray)output).maxInd){
+					errorSem.deteccion(new IndexOOBException(),nombre, expr.valInt);
+				}
+				SymbolArray temp = ((SymbolArray)output).clone();
+				temp.setIndice(expr.code);
+				output = temp;
+			}
+			
+		}catch(SymbolNotFoundException e){
+			errorSem.deteccion(e,nombre);	
+		}
+		return output;
+	}
+|	LOOKAHEAD(2)  nombre = <tID>
+	{
+		try{ 
+			//buscamos el simbolo asignable en la tabla de simbolos
+			output = tabla.getSymbol(nombre.image);
+		}catch(SymbolNotFoundException e){
+			errorSem.deteccion(e,nombre);
+		}
+		return output;
+	}	
+}
+
+Attributes expr(Attributes prev) :
+{
+	Attributes a = new Attributes();
+	Attributes a1,a2;
+}
+{
+	a1=factor_nivel1() a2=expr_plus(a1)
+	{
+		return a2;
+	}
+}
+
+Attributes expr_plus(Attributes prev) :
+{
+	Attributes a1, a2;
+	Attributes mid = new Attributes();
+	Token op;
+}
+{
+	(op=<tMENOR> | op=<tMENORI> | op=<tDISTINTO> | op=<tIGUAL> | op=<tMAYOR> | op=<tMAYORI>) a1=factor_nivel1()
+	{
+		if(op.kind==tIGUAL) {
+			//Los dos tienen que ser enteros o chars
+			if (!((prev.type == a1.type) && (prev.type==Symbol.Types.INT || prev.type==Symbol.Types.CHAR || prev.type==Symbol.Types.BOOL))) { 
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT,Symbol.Types.CHAR);
+			}
+			//Calculo
+			if (prev.type==Symbol.Types.INT) { //Son los dos enteros
+				mid = new Attributes(true);
+			}
+			else if(prev.type == Symbol.Types.BOOL) { // Son los dos bools
+				mid = new Attributes(true);
+			}
+			else { //Son los dos chars
+				mid = new Attributes(true);
+			}
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.EQ);
+		}
+		else if(op.kind==tMAYOR) {
+			//Los dos tienen que ser enteros o chars
+			if (!((prev.type == a1.type) && (prev.type==Symbol.Types.INT || prev.type==Symbol.Types.CHAR))) { 
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT,Symbol.Types.CHAR);
+			}
+			//Calculo
+			if (prev.type==Symbol.Types.INT) { //Son los dos enteros
+				mid = new Attributes(true);
+			}
+			else { //Son los dos chars
+				mid = new Attributes(true);
+			}
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.GT);
+		}
+		else if(op.kind==tMAYORI) {
+			//Los dos tienen que ser enteros o chars
+			if (!((prev.type == a1.type) && (prev.type==Symbol.Types.INT || prev.type==Symbol.Types.CHAR))) { 
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT,Symbol.Types.CHAR);
+			}
+			//Calculo
+			if (prev.type==Symbol.Types.INT) { //Son los dos enteros
+				mid = new Attributes(true);
+			}
+			else { //Son los dos chars
+				mid = new Attributes(true);
+			}
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.GTE);
+		}
+		else if(op.kind==tMENOR) {
+			//Los dos tienen que ser enteros o chars
+			if (!((prev.type == a1.type) && (prev.type==Symbol.Types.INT || prev.type==Symbol.Types.CHAR))) { 
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT,Symbol.Types.CHAR);
+			}
+			//Calculo
+			if (prev.type==Symbol.Types.INT) { //Son los dos enteros
+				mid = new Attributes(true);
+			}
+			else { //Son los dos chars
+				mid = new Attributes(true);
+			}
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.LT);
+		}
+		else if(op.kind==tMENORI) {
+			//Los dos tienen que ser enteros o chars
+			if (!((prev.type == a1.type) && (prev.type==Symbol.Types.INT || prev.type==Symbol.Types.CHAR))) { 
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT,Symbol.Types.CHAR);
+			}
+			//Calculo
+			if (prev.type==Symbol.Types.INT) { //Son los dos enteros
+				mid = new Attributes(true);
+			}
+			else { //Son los dos chars
+				mid = new Attributes(true);
+			}
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.LTE);
+		}
+		else if(op.kind==tDISTINTO) {
+			//Los dos tienen que ser enteros o chars
+			if (!((prev.type == a1.type) && (prev.type==Symbol.Types.INT || prev.type==Symbol.Types.CHAR || prev.type==Symbol.Types.BOOL))) { 
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT,Symbol.Types.CHAR);
+			}
+			//Calculo
+			if (prev.type==Symbol.Types.INT) { //Son los dos enteros
+				mid = new Attributes(true);
+			}
+			else if(prev.type == Symbol.Types.BOOL) { // Son los dos bools
+				mid = new Attributes(true);
+			}
+			else { //Son los dos chars
+				mid = new Attributes(true);
+			}
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.NEQ);
+		}
+	}
+	a2=expr_plus(mid)
+	{
+		return a2;
+	}
+|
+	{
+		return prev;
+	}
+}
+
+
+Attributes factor_nivel1() :
+{
+	Attributes a = new Attributes();
+	Attributes a1,a2;
+}
+{
+	a1=factor_nivel2() a2=factor_nivel1_plus(a1)
+	{
+		return a2;
+	}
+}
+
+Attributes factor_nivel1_plus(Attributes prev) :
+{
+	Attributes a1, a2;
+	Attributes mid = new Attributes();
+	Token op;
+}
+{
+	(op=<tSUMA> | op=<tRESTA> | op=<tOR>) a1=factor_nivel2()
+	{
+		if(op.kind==tSUMA) {
+			//Los dos tienen que ser enteros
+			if (prev.type!=Symbol.Types.INT || a1.type!=Symbol.Types.INT) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+			}
+			//Calculo
+			mid = new Attributes(prev.valInt);
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.PLUS);
+		}
+		else if(op.kind==tRESTA) {
+			//Los dos tienen que ser enteros
+			if (prev.type!=Symbol.Types.INT || a1.type!=Symbol.Types.INT) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+			}
+			//Calculo
+			mid = new Attributes(prev.valInt);
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.SBT);
+		}
+		else if(op.kind==tOR) {
+			//Los dos tienen que ser booleanos
+			if (prev.type!=Symbol.Types.BOOL || a1.type!=Symbol.Types.BOOL) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+			}
+			//Calculo
+			mid = new Attributes(true);
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.OR);
+		}	
+	}
+	a2=factor_nivel1_plus(mid)
+	{
+		return a2;
+	}
+|
+	{
+		return prev;
+	}
+}
+
+Attributes factor_nivel2() :
+{
+	Attributes a = new Attributes();
+	Attributes a1,a2;
+	Token op = null;
+}
+{
+	(op=<tSUMA> | op=<tRESTA>)? a1=factor_nivel3()
+	{
+		if(op == null) {	
+			a2 = a1;
+		}
+		else if(op.kind==tSUMA) {
+			//Los dos tienen que ser enteros
+			if (a1.type!=Symbol.Types.INT) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+			}
+			//Calculo
+			a2 = new Attributes(a1.valInt);
+			a2.code.addBlock(a1.code);
+		}
+		else if(op.kind==tRESTA) {
+			//Los dos tienen que ser enteros
+			if (a1.type!=Symbol.Types.INT) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+			}
+			//Calculo
+			a2 = new Attributes(a1.valInt);
+			a2.code.addBlock(a1.code);
+			a2.code.addInst(OpCode.NGI);
+
+		}
+		else { //No deberia entrar nunca aqui
+			a2 = new Attributes();
+		}
+		return a2;
+	}
+}
+
+
+Attributes factor_nivel3() :
+{
+	Attributes a = new Attributes();
+	Attributes a1,a2;
+}
+{
+	a1=factor() a2=factor_nivel3_plus(a1)
+	{
+		return a2;
+	}
+}
+
+Attributes factor_nivel3_plus(Attributes prev) :
+{
+	Attributes a1, a2;
+	Attributes mid = new Attributes();
+	Token op;
+}
+{
+	(op=<tMUL> | op=<tDIV> | op=<tMOD> | op=<tAND>) a1=factor()
+	{
+		if(op.kind==tMUL) {
+			//Los dos tienen que ser enteros
+			if (prev.type!=Symbol.Types.INT || a1.type!=Symbol.Types.INT) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+			}
+			//Calculo-- Multiplicacion en código P
+			mid = new Attributes(prev.valInt);
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.TMS);
+		}
+		else if(op.kind==tDIV) {
+			//Los dos tienen que ser enteros
+			if (prev.type!=Symbol.Types.INT || a1.type!=Symbol.Types.INT) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+			}
+			//Calculo
+			mid = new Attributes(prev.valInt);
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.DIV);
+		}
+		else if(op.kind==tMOD) {
+			//Los dos tienen que ser enteros
+			if (prev.type!=Symbol.Types.INT || a1.type!=Symbol.Types.INT) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.INT);
+			}
+			//Calculo
+			mid = new Attributes(prev.valInt);
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.MOD);
+		}
+		else if(op.kind==tAND) {
+			//Los dos tienen que ser booleanos
+			if (prev.type!=Symbol.Types.BOOL || a1.type!=Symbol.Types.BOOL) {
+				errorSem.deteccion(new TypeErrorException(), op, Symbol.Types.BOOL);
+			}
+			//Calculo
+			mid = new Attributes(true);
+			mid.code.addBlock(prev.code);
+			mid.code.addBlock(a1.code);
+			mid.code.addInst(OpCode.AND);
+		}
+	}
+	a2=factor_nivel3_plus(mid)
+	{
+		return a2;
+	}
+|
+	{
+		return prev;
+	}
+}
+
+
+Attributes factor() :
+{
+	Attributes a = new Attributes();
+	Attributes output, data;
+	Token t1;
+}
+{
+	t1 = <tNUM>
+	{
+		output = new Attributes(Integer.parseInt(t1.image));
+		output.code.addInst(OpCode.STC,Integer.parseInt(t1.image));
+		
+		return output;
+	}
+|	t1 = <tCAD>
+	{
+		output = new Attributes(t1.image);
+		for(int i = 1; i<t1.image.length()-1; i++) {
+			output.code.addInst(OpCode.STC,t1.image.charAt(i));
+		}
+		
+		return output;
+	}
+|	t1 = <tCH>
+	{
+		output = new Attributes(t1.image.charAt(1));
+		output.code.addInst(OpCode.STC,t1.image.charAt(1));
+		
+		return output;
+	}
+|	(t1=<tTRUE> | t1=<tFALSE>)
+	{
+		output = new Attributes(Boolean.parseBoolean(t1.image));
+		if(t1.image.equals("true")) {
+			output.code.addInst(OpCode.STC,1);
+		}
+		else {
+			output.code.addInst(OpCode.STC,0);
+		}
+		
+		return output;
+	}
+|	LOOKAHEAD(2)  t1=<tID> <tCOPEN> data=expr(a) <tCCLOSE>
+	{
+		//Acceder al vector
+		try {
+			Symbol v = tabla.getSymbol(t1.image);
+			//Comprobar que el index es un int
+			if (data.type != Symbol.Types.INT) {
+				errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.INT);
+			}
+			//Comprobar que el simbolo es un array
+			if (v.type != Symbol.Types.ARRAY) {
+				errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.ARRAY);
+				output = new Attributes();
+			}
+			else {
+				//Comprobar que el index es correcto
+				if(data.isConstant) {	//Si sabemos el valor...
+					if((data.valInt > ((SymbolArray)v).maxInd) || (data.valInt < ((SymbolArray)v).minInd)) {
+						errorSem.deteccion(new IndexOOBException(), t1, data.valInt);
+					}
+				}
+				output = new Attributes(((SymbolArray)v).baseType, Symbol.ParameterClass.REF);
+			}
+			
+			output.miSimbolo = v;
+
+			Symbol f = tabla.peekStack();
+			// Primero se genera la direccion del vector, luego se trata la expresion
+			// y se suma para acceder a la componente del vector.
+			output.code.addComment("Direccion de la componente 0 del vector");
+			output.code.addInst(OpCode.SRF,f.nivel+1-v.nivel,(int)v.dir);
+			if(v.parClass == Symbol.ParameterClass.REF) {
+				output.code.addInst(OpCode.DRF);
+			}
+			output.code.addComment("Offset");
+			output.code.addBlock(data.code);
+			output.code.addInst(OpCode.PLUS);
+			output.code.addInst(OpCode.DRF);
+
+			return output;
+		}
+		catch(SymbolNotFoundException e) {
+			errorSem.deteccion(e, t1);
+		}
+	
+	}
+| 	output=inst_char2int()
+	{
+		return output;
+	}
+|	output=inst_int2char()
+	{
+		return output;
+	}
+|	LOOKAHEAD(2)  output=inst_invocacion()
+	{
+		return output;
+	}
+|	t1=<tID>
+	{
+		try {
+			Symbol f = tabla.peekStack();
+			Symbol v = tabla.getSymbol(t1.image);
+			if (v.type!=Symbol.Types.INT && v.type!=Symbol.Types.CHAR && v.type!=Symbol.Types.BOOL && v.type!=Symbol.Types.ARRAY) {
+				errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.INT, Symbol.Types.CHAR, Symbol.Types.BOOL,Symbol.Types.ARRAY);
+			}
+			if (v.type == Symbol.Types.INT) {
+				output = new Attributes(((SymbolInt)v).value, Symbol.ParameterClass.REF);
+				output.code.addInst(OpCode.SRF,f.nivel+1-v.nivel,(int)v.dir);
+				output.code.addInst(OpCode.DRF);
+				if(v.parClass == Symbol.ParameterClass.REF) {
+					output.code.addInst(OpCode.DRF);
+				}
+			}
+			else if (v.type == Symbol.Types.CHAR) {
+				output = new Attributes(((SymbolChar)v).value, Symbol.ParameterClass.REF);
+				output.code.addInst(OpCode.SRF,f.nivel+1-v.nivel,(int)v.dir);
+				output.code.addInst(OpCode.DRF);
+				if(v.parClass == Symbol.ParameterClass.REF) {
+					output.code.addInst(OpCode.DRF);
+				}
+			}
+			else if (v.type == Symbol.Types.BOOL) {
+				output = new Attributes(((SymbolBool)v).value, Symbol.ParameterClass.REF);
+				output.code.addInst(OpCode.SRF,f.nivel+1-v.nivel,(int)v.dir);
+				output.code.addInst(OpCode.DRF);
+				if(v.parClass == Symbol.ParameterClass.REF) {
+					output.code.addInst(OpCode.DRF);
+				}
+			}
+			else if (v.type == Symbol.Types.ARRAY) {
+				output = new Attributes(((SymbolArray)v).baseType, ((SymbolArray)v).maxInd-((SymbolArray)v).minInd);
+				//Apilar todos los elementos
+				for (int k=((SymbolArray)v).maxInd-((SymbolArray)v).minInd-1; k>=0; k--) {
+					output.code.addInst(OpCode.SRF,f.nivel+1-v.nivel,((int)v.dir)+k);
+					output.code.addInst(OpCode.DRF);
+				}
+			}
+			else { //Nunca deberia entrar aqui
+				System.err.println("ERROR");
+				output = new Attributes();
+			}
+			output.miSimbolo = v;
+
+
+			return output;
+
+		}
+		catch(SymbolNotFoundException e) {
+			errorSem.deteccion(e, t1);
+			//TODO: return aqui
+		}
+	}
+|	<tPOPEN> output=expr(a) <tPCLOSE>
+	{
+		
+		return output;
+	}
+|	t1=<tNOT> output=factor()
+	{
+		if (output.type != Symbol.Types.BOOL) {
+			errorSem.deteccion(new TypeErrorException(), t1, Symbol.Types.BOOL);
+			return output;
+		}
+		output.valBool = !output.valBool;
+		
+		output.code.addInst(OpCode.NGB);
+
+		return output;
+	}
+}
+
+void inst_while() :
+{
+	Attributes a = new Attributes();
+	Attributes condition = new Attributes();
+	Token buc;
+	CodeBlock c = new CodeBlock();
+	String etiqueta = CGU.newLabel();
+	String etiquetaFinal = CGU.newLabel();
+}
+{
+	try {
+		buc = <tWHILE> condition = expr(a) <tDO>
+		{
+			if(condition.type != Symbol.Types.BOOL){
+				System.err.println("Tipo que me llega: "+condition.type);
+				errorSem.deteccion(new TypeErrorException(),buc,Symbol.Types.BOOL);
+			}
+			c = new CodeBlock();
+
+			c.addLabel(etiqueta);
+			c.addComment("Condicion");
+			c.addBlock(condition.code);
+			c.addInst(OpCode.JMF,etiquetaFinal);
+			
+			c.encloseXMLTags("inst_while");
+
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+		(instruccion())* <tEND>
+		{
+			c = new CodeBlock();
+
+			c.addComment("Saltar a inicio del while");
+			c.addInst(OpCode.JMP,etiqueta);
+			c.addLabel(etiquetaFinal);
+
+			try {
+				pcode.write(c.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+		}
+	}
+	catch(ParseException e) {
+		System.err.println(e.toString());
+		Token t;
+		do {
+		  t = getNextToken();
+		}
+		while (t.kind != tEND);
+	}
+}
+	
+
