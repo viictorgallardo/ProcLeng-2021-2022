@@ -1,5 +1,5 @@
 # ProcLeng-2021-2022
-Repositorio privado de las prácticas de la asignatura Procesdores de Lenguajes, curso 2021-2022
+Repositorio privado de las prácticas de la asignatura Procesadores de Lenguajes, curso 2021-2022
 
 Este proyecto fue realizado por:
 Marcos Garralaga Blasco (795936[@unizar.es])
